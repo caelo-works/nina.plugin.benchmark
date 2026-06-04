@@ -20,14 +20,28 @@
             </Grid.RowDefinitions>
 
             <!-- Controls -->
-            <StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center">
-                <Button Padding="12,4" Content="Run benchmark" Command="{Binding RunBenchmarkCommand}" />
-                <Button Margin="6,0,0,0" Padding="12,4" Content="Cancel"
-                        Command="{Binding CancelCommand}"
-                        Visibility="{Binding IsRunning, Converter={StaticResource BoolToVis}}" />
-                <TextBlock Margin="16,0,4,0" VerticalAlignment="Center" Text="Runs/function:" />
-                <TextBox Width="40" VerticalAlignment="Center" Text="{Binding Iterations, UpdateSourceTrigger=PropertyChanged}" />
-            </StackPanel>
+            <Grid Grid.Row="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Padding="12,4" Content="Run benchmark" Command="{Binding RunBenchmarkCommand}" />
+                    <Button Margin="6,0,0,0" Padding="12,4" Content="Cancel"
+                            Command="{Binding CancelCommand}"
+                            Visibility="{Binding IsRunning, Converter={StaticResource BoolToVis}}" />
+                    <Button Margin="6,0,0,0" Padding="12,4" Content="Clear all"
+                            Command="{Binding ClearHistoryCommand}"
+                            ToolTip="Remove every saved benchmark run from the history" />
+                    <TextBlock Margin="16,0,4,0" VerticalAlignment="Center" Text="Runs/function:" />
+                    <TextBox Width="40" VerticalAlignment="Center" Text="{Binding Iterations, UpdateSourceTrigger=PropertyChanged}" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="12,0,0,0">
+                    <TextBlock VerticalAlignment="Center" Text="Best score:" />
+                    <TextBlock Margin="6,0,0,0" VerticalAlignment="Center" FontWeight="Bold" FontSize="16"
+                               Text="{Binding BestScore}" />
+                </StackPanel>
+            </Grid>
 
             <!-- Progress -->
             <Grid Grid.Row="1" Margin="0,8,0,8">

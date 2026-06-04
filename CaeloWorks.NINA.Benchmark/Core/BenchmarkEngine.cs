@@ -56,6 +56,9 @@ namespace CaeloWorks.NINA.Benchmark.Core {
         /// <summary>Most recent run, used by the UI to show the per-function breakdown.</summary>
         public BenchmarkResult LatestResult => History.Count > 0 ? History[0] : null;
 
+        /// <summary>Highest score across the kept history (0 when empty).</summary>
+        public int BestScore => History.Count > 0 ? History.Max(h => h.Score) : 0;
+
         public string TestImagesFolder { get; }
 
         [ImportingConstructor]
@@ -85,6 +88,7 @@ namespace CaeloWorks.NINA.Benchmark.Core {
             cts = new CancellationTokenSource();
             IsRunning = true;
             RunBenchmarkCommand.NotifyCanExecuteChanged();
+            ClearHistoryCommand.NotifyCanExecuteChanged();
             ProgressValue = 0;
             StatusText = "Preparing…";
             try {
@@ -108,6 +112,7 @@ namespace CaeloWorks.NINA.Benchmark.Core {
                     History.RemoveAt(History.Count - 1);
                 }
                 OnPropertyChanged(nameof(LatestResult));
+                OnPropertyChanged(nameof(BestScore));
                 store.Save(History);
                 StatusText = $"Done — score {result.Score} ({result.TotalMs:0} ms total)";
             } catch (OperationCanceledException) {
@@ -118,11 +123,21 @@ namespace CaeloWorks.NINA.Benchmark.Core {
                 ProgressValue = 0;
                 IsRunning = false;
                 RunBenchmarkCommand.NotifyCanExecuteChanged();
+                ClearHistoryCommand.NotifyCanExecuteChanged();
             }
         }
 
         [RelayCommand]
         private void Cancel() => cts?.Cancel();
+
+        [RelayCommand(CanExecute = nameof(CanRun))]
+        private void ClearHistory() {
+            History.Clear();
+            store.Save(History);
+            OnPropertyChanged(nameof(LatestResult));
+            OnPropertyChanged(nameof(BestScore));
+            StatusText = "History cleared";
+        }
 
         private IReadOnlyList<TestFrame> DiscoverFrames() {
             if (string.IsNullOrEmpty(TestImagesFolder) || !Directory.Exists(TestImagesFolder)) {
