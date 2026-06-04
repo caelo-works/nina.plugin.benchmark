@@ -198,15 +198,23 @@ namespace CaeloWorks.NINA.Benchmark.Core {
                 }, runs), runs);
 
                 // --- Full star detection (superset; excluded from the score total) ---
+                // Run it on a representative image the way N.I.N.A. does after a capture: debayer (OSC)
+                // then auto-stretch, then detect. Detecting on the raw, unstretched render would bury
+                // faint stars in the noise and report a far lower count.
                 Step("StarDetection");
-                var rendered = imageData.RenderImage();
+                var imageSettings = profileService.ActiveProfile.ImageSettings;
+                IRenderedImage forDetect = imageData.RenderImage();
+                if (frame.IsBayered) {
+                    forDetect = forDetect.Debayer(saveColorChannels: false, saveLumChannel: false, bayerPattern: frame.BayerPattern);
+                }
+                forDetect = await forDetect.Stretch(imageSettings.AutoStretchFactor, imageSettings.BlackClipping, unlinked: frame.IsBayered);
                 var p = new StarDetectionParams {
-                    Sensitivity = profileService.ActiveProfile.ImageSettings.StarSensitivity,
-                    NoiseReduction = profileService.ActiveProfile.ImageSettings.NoiseReduction
+                    Sensitivity = imageSettings.StarSensitivity,
+                    NoiseReduction = imageSettings.NoiseReduction
                 };
                 var noProgress = new Progress<ApplicationStatus>();
                 var detectMs = await TimeAsync(async () => {
-                    var r = await starDetection.Detect(rendered, rendered.Image.Format, p, noProgress, token);
+                    var r = await starDetection.Detect(forDetect, forDetect.Image.Format, p, noProgress, token);
                     return r?.DetectedStars ?? 0;
                 }, runs, v => starCount = v);
                 acc.Add(FnStarDetection, detectMs, runs, includeInTotal: false);
