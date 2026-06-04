@@ -93,9 +93,10 @@ namespace CaeloWorks.NINA.Benchmark.Core {
             StatusText = "Preparing…";
             try {
                 var frames = DiscoverFrames();
-                if (SystemInfo == null) {
-                    SystemInfo = await systemInfoProvider.GetAsync();
-                }
+                // Refresh the system snapshot at the start of the run so it reflects the machine state
+                // (power plan, free RAM, clocks) at benchmark time and is stored with the result.
+                StatusText = "Reading system info…";
+                SystemInfo = await systemInfoProvider.GetAsync();
 
                 var progress = new Progress<BenchmarkProgress>(p => {
                     ProgressValue = p.Fraction;
@@ -129,6 +130,13 @@ namespace CaeloWorks.NINA.Benchmark.Core {
 
         [RelayCommand]
         private void Cancel() => cts?.Cancel();
+
+        [RelayCommand]
+        private void ToggleDetails(BenchmarkResult result) {
+            if (result != null) {
+                result.IsExpanded = !result.IsExpanded;
+            }
+        }
 
         [RelayCommand(CanExecute = nameof(CanRun))]
         private void ClearHistory() {

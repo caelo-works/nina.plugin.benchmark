@@ -9,6 +9,8 @@
 #endregion "copyright"
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Text.Json.Serialization;
 
 namespace CaeloWorks.NINA.Benchmark.Core {
 
@@ -29,7 +31,7 @@ namespace CaeloWorks.NINA.Benchmark.Core {
     /// Aggregated outcome of a single benchmark run: one <see cref="FunctionResult"/> per measured
     /// NINA/Accord primitive, plus an overall score (higher is faster).
     /// </summary>
-    public class BenchmarkResult {
+    public class BenchmarkResult : INotifyPropertyChanged {
         public DateTime TimestampUtc { get; set; }
         public int ImageCount { get; set; }
         public int Runs { get; set; }
@@ -44,5 +46,21 @@ namespace CaeloWorks.NINA.Benchmark.Core {
 
         public string DisplayTimestamp => TimestampUtc.ToLocalTime().ToString("yyyy-MM-dd HH:mm");
         public string CpuShort => System?.Cpu;
+
+        /// <summary>UI-only: whether the row details (system snapshot + per-function timings) are expanded.</summary>
+        private bool isExpanded;
+
+        [JsonIgnore]
+        public bool IsExpanded {
+            get => isExpanded;
+            set {
+                if (isExpanded != value) {
+                    isExpanded = value;
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsExpanded)));
+                }
+            }
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
     }
 }

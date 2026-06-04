@@ -79,8 +79,24 @@
             <!-- History -->
             <DataGrid Grid.Row="3" ItemsSource="{Binding History}"
                       AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="True"
-                      HeadersVisibility="Column" GridLinesVisibility="Horizontal">
+                      HeadersVisibility="Column" GridLinesVisibility="Horizontal"
+                      RowDetailsVisibilityMode="Collapsed">
+                <DataGrid.RowStyle>
+                    <Style TargetType="DataGridRow">
+                        <Setter Property="DetailsVisibility"
+                                Value="{Binding IsExpanded, Converter={StaticResource BoolToVis}}" />
+                    </Style>
+                </DataGrid.RowStyle>
                 <DataGrid.Columns>
+                    <DataGridTemplateColumn Header="" CanUserResize="False">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Margin="2,1" Padding="6,1" Content="Details"
+                                        Command="{Binding DataContext.ToggleDetailsCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        CommandParameter="{Binding}" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
                     <DataGridTextColumn Header="Date" Binding="{Binding DisplayTimestamp}" />
                     <DataGridTextColumn Header="Score" Binding="{Binding Score}" />
                     <DataGridTextColumn Header="Total (ms)" Binding="{Binding TotalMs, StringFormat=N0}" />
@@ -88,6 +104,44 @@
                     <DataGridTextColumn Header="Runs" Binding="{Binding Runs}" />
                     <DataGridTextColumn Header="CPU" Binding="{Binding CpuShort}" Width="*" />
                 </DataGrid.Columns>
+                <DataGrid.RowDetailsTemplate>
+                    <DataTemplate>
+                        <Border Margin="4,4,4,10" Padding="8" BorderThickness="1" BorderBrush="#40808080">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <!-- System snapshot at test time -->
+                                <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                                    <TextBlock FontWeight="Bold" Text="System at test time" Margin="0,0,0,4" />
+                                    <TextBlock FontFamily="Consolas,Courier New"
+                                               Text="{Binding System.Summary, TargetNullValue='(not recorded)'}" />
+                                </StackPanel>
+                                <!-- Per sub-test breakdown -->
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock FontWeight="Bold" Text="Per-function timing" Margin="0,0,0,4" />
+                                    <ItemsControl ItemsSource="{Binding Functions}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid Margin="0,1">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="220" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Grid.Column="0" FontFamily="Consolas,Courier New" Text="{Binding Name}" />
+                                                    <TextBlock Grid.Column="1" FontFamily="Consolas,Courier New" Text="{Binding Display}" />
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                    <TextBlock Margin="0,6,0,0" FontFamily="Consolas,Courier New"
+                                               Text="{Binding TotalMs, StringFormat='Total: {0:N2} ms'}" />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </DataGrid.RowDetailsTemplate>
             </DataGrid>
         </Grid>
     </GroupBox>
