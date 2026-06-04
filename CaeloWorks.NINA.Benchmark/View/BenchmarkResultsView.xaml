@@ -79,10 +79,10 @@
             <!-- History -->
             <DataGrid Grid.Row="3" ItemsSource="{Binding History}"
                       AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="True"
-                      HeadersVisibility="Column" GridLinesVisibility="Horizontal"
-                      RowDetailsVisibilityMode="Collapsed">
+                      HeadersVisibility="Column" GridLinesVisibility="Horizontal">
                 <DataGrid.RowStyle>
-                    <Style TargetType="DataGridRow">
+                    <!-- Inherit N.I.N.A.'s themed row style, only adding the expand binding. -->
+                    <Style TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
                         <Setter Property="DetailsVisibility"
                                 Value="{Binding IsExpanded, Converter={StaticResource BoolToVis}}" />
                     </Style>
