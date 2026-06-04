@@ -40,6 +40,9 @@ namespace CaeloWorks.NINA.Benchmark.Core {
         private readonly IPluggableBehaviorSelector<IStarDetection> starDetectionSelector;
         private readonly BenchmarkResultStore store;
         private readonly SystemInfoProvider systemInfoProvider;
+        private readonly BenchmarkSettingsStore settingsStore;
+        private readonly BenchmarkSubmitter submitter;
+        private readonly string pluginVersion;
 
         private CancellationTokenSource cts;
 
@@ -48,6 +51,17 @@ namespace CaeloWorks.NINA.Benchmark.Core {
         [ObservableProperty] private double progressValue;
         [ObservableProperty] private string statusText = "Idle";
         [ObservableProperty] private int iterations = 3;
+
+        // Submission settings (persisted to settings.json on change).
+        [ObservableProperty] private string endpointUrl;
+        [ObservableProperty] private string submitToken;
+        [ObservableProperty] private string nickname;
+        [ObservableProperty] private string machineName;
+        [ObservableProperty] private bool isSubmitting;
+        [ObservableProperty] private string lastShareUrl;
+
+        /// <summary>Convenience for binding button enabled-state without a converter.</summary>
+        public bool NotSubmitting => !IsSubmitting;
 
         public ObservableCollection<BenchmarkResult> History { get; }
 
@@ -83,10 +97,76 @@ namespace CaeloWorks.NINA.Benchmark.Core {
 
             store = new BenchmarkResultStore();
             systemInfoProvider = new SystemInfoProvider();
+            settingsStore = new BenchmarkSettingsStore();
+            submitter = new BenchmarkSubmitter();
+            pluginVersion = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "";
             TestImagesFolder = ResolveTestImagesFolder();
             History = new ObservableCollection<BenchmarkResult>(store.Load());
 
+            // Assign backing fields directly so loading doesn't trigger a save.
+            var s = settingsStore.Load();
+            endpointUrl = s.EndpointUrl;
+            submitToken = s.SubmitToken;
+            nickname = s.Nickname;
+            machineName = s.MachineName;
+
             _ = RefreshSystemInfoAsync();
+        }
+
+        partial void OnIsSubmittingChanged(bool value) => OnPropertyChanged(nameof(NotSubmitting));
+
+        partial void OnEndpointUrlChanged(string value) => SaveSettings();
+        partial void OnSubmitTokenChanged(string value) => SaveSettings();
+        partial void OnNicknameChanged(string value) => SaveSettings();
+        partial void OnMachineNameChanged(string value) => SaveSettings();
+
+        private void SaveSettings() {
+            settingsStore.Save(new BenchmarkSettings {
+                EndpointUrl = EndpointUrl ?? "",
+                SubmitToken = SubmitToken ?? "",
+                Nickname = Nickname ?? "",
+                MachineName = MachineName ?? "",
+            });
+        }
+
+        [RelayCommand]
+        private async Task SubmitAsync(BenchmarkResult result) {
+            if (result == null || IsSubmitting) { return; }
+            IsSubmitting = true;
+            StatusText = "Submitting…";
+            try {
+                var url = await submitter.SubmitAsync(result, new BenchmarkSettings {
+                    EndpointUrl = EndpointUrl ?? "",
+                    SubmitToken = SubmitToken ?? "",
+                    Nickname = Nickname ?? "",
+                    MachineName = MachineName ?? "",
+                }, pluginVersion, CancellationToken.None);
+
+                LastShareUrl = url;
+                TryCopyToClipboard(url);
+                StatusText = string.IsNullOrEmpty(url) ? "Submitted." : $"Shared — link copied: {url}";
+            } catch (Exception ex) {
+                StatusText = "Submit failed: " + ex.Message;
+            } finally {
+                IsSubmitting = false;
+            }
+        }
+
+        [RelayCommand]
+        private void OpenShareUrl() {
+            if (string.IsNullOrWhiteSpace(LastShareUrl)) { return; }
+            try {
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(LastShareUrl) {
+                    UseShellExecute = true,
+                });
+            } catch { /* ignore */ }
+        }
+
+        private static void TryCopyToClipboard(string text) {
+            if (string.IsNullOrEmpty(text)) { return; }
+            try {
+                System.Windows.Clipboard.SetText(text);
+            } catch { /* clipboard not available */ }
         }
 
         [RelayCommand]

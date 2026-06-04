@@ -13,6 +13,7 @@
             <StackPanel Orientation="Vertical" DataContext="{Binding Engine}">
                 <view:SystemInfoView />
                 <view:BenchmarkResultsView MinHeight="320" />
+                <view:SettingsView />
             </StackPanel>
         </ScrollViewer>
     </DataTemplate>

@@ -14,6 +14,7 @@
         <StreamGeometry x:Key="CaeloIcon_Trash">M4 7l16 0 M10 11l0 6 M14 11l0 6 M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12 M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3</StreamGeometry>
         <StreamGeometry x:Key="CaeloIcon_Details">M11 15a4 4 0 1 0 8 0a4 4 0 1 0 -8 0 M18.5 18.5l2.5 2.5 M4 6h16 M4 12h4 M4 18h4</StreamGeometry>
         <StreamGeometry x:Key="CaeloIcon_Cancel">M18 6l-12 12 M6 6l12 12</StreamGeometry>
+        <StreamGeometry x:Key="CaeloIcon_Share">M6 12m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0 M18 6m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0 M18 18m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0 M8.7 10.7l6.6 -3.4 M8.7 13.3l6.6 3.4</StreamGeometry>
         <Style x:Key="IconPath" TargetType="Path">
             <Setter Property="Width" Value="15" />
             <Setter Property="Height" Value="15" />
@@ -124,14 +125,26 @@
                     <DataGridTemplateColumn Header="" CanUserResize="False">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <Button Margin="3,2" Padding="14,4,14,4" HorizontalContentAlignment="Left"
-                                        Command="{Binding DataContext.ToggleDetailsCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                        CommandParameter="{Binding}">
-                                    <StackPanel Orientation="Horizontal" Margin="10,3">
-                                        <Path Style="{StaticResource IconPath}" Width="13" Height="13" Data="{StaticResource CaeloIcon_Details}" />
-                                        <TextBlock Margin="7,0,0,0" VerticalAlignment="Center" Text="Details" />
-                                    </StackPanel>
-                                </Button>
+                                <StackPanel Orientation="Horizontal">
+                                    <Button Margin="3,2" Padding="14,4,14,4" HorizontalContentAlignment="Left"
+                                            Command="{Binding DataContext.ToggleDetailsCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                            CommandParameter="{Binding}">
+                                        <StackPanel Orientation="Horizontal" Margin="10,3">
+                                            <Path Style="{StaticResource IconPath}" Width="13" Height="13" Data="{StaticResource CaeloIcon_Details}" />
+                                            <TextBlock Margin="7,0,0,0" VerticalAlignment="Center" Text="Details" />
+                                        </StackPanel>
+                                    </Button>
+                                    <Button Margin="3,2" Padding="14,4,14,4" HorizontalContentAlignment="Left"
+                                            ToolTip="Submit this run to the sharing site"
+                                            Command="{Binding DataContext.SubmitCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                            CommandParameter="{Binding}"
+                                            IsEnabled="{Binding DataContext.NotSubmitting, RelativeSource={RelativeSource AncestorType=UserControl}}">
+                                        <StackPanel Orientation="Horizontal" Margin="10,3">
+                                            <Path Style="{StaticResource IconPath}" Width="13" Height="13" Data="{StaticResource CaeloIcon_Share}" />
+                                            <TextBlock Margin="7,0,0,0" VerticalAlignment="Center" Text="Share" />
+                                        </StackPanel>
+                                    </Button>
+                                </StackPanel>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>

@@ -1,0 +1,71 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - link "N.I.N.A. Benchmark" [ref=e4] [cursor=pointer]:
+        - /url: /
+        - img [ref=e5]
+        - generic [ref=e10]: N.I.N.A. Benchmark
+      - navigation [ref=e11]:
+        - link "Leaderboard" [ref=e12] [cursor=pointer]:
+          - /url: /
+        - link "Compare" [ref=e13] [cursor=pointer]:
+          - /url: /compare
+  - main [ref=e14]:
+    - generic [ref=e15]:
+      - generic [ref=e16]:
+        - heading "Leaderboard" [level=1] [ref=e17]
+        - paragraph [ref=e18]: 2 runs submitted. Higher score = faster on N.I.N.A.'s real image-processing pipeline.
+      - generic [ref=e19]:
+        - generic [ref=e20]:
+          - searchbox "Search CPU / GPU / OS / author…" [ref=e21]
+          - button "Search" [ref=e22] [cursor=pointer]
+        - generic [ref=e23]:
+          - link "Top score" [ref=e24] [cursor=pointer]:
+            - /url: /?
+          - link "Fastest total" [ref=e25] [cursor=pointer]:
+            - /url: /?sort=total
+          - link "Most recent" [ref=e26] [cursor=pointer]:
+            - /url: /?sort=recent
+      - table [ref=e29]:
+        - rowgroup [ref=e30]:
+          - row "# Score CPU Clock GPU OS By Total Date" [ref=e31]:
+            - columnheader [ref=e32]
+            - columnheader "#" [ref=e33]
+            - columnheader "Score" [ref=e34]
+            - columnheader "CPU" [ref=e35]
+            - columnheader "Clock" [ref=e36]
+            - columnheader "GPU" [ref=e37]
+            - columnheader "OS" [ref=e38]
+            - columnheader "By" [ref=e39]
+            - columnheader "Total" [ref=e40]
+            - columnheader "Date" [ref=e41]
+        - rowgroup [ref=e42]:
+          - row "1 142 Intel(R) Core(TM) i7-1360P 5.00 GHz Intel Iris Xe Windows 11 Professionnel (build 26200) NUC i7 700 ms Jun 04, 2026, 06:26 PM" [ref=e43]:
+            - cell [ref=e44]:
+              - checkbox [ref=e45]
+            - cell "1" [ref=e46]
+            - cell "142" [ref=e47]:
+              - link "142" [ref=e48] [cursor=pointer]:
+                - /url: /runs/zKMigSvmAx
+            - cell "Intel(R) Core(TM) i7-1360P" [ref=e49]
+            - cell "5.00 GHz" [ref=e50]
+            - cell "Intel Iris Xe" [ref=e51]
+            - cell "Windows 11 Professionnel (build 26200)" [ref=e52]
+            - cell "NUC i7" [ref=e53]
+            - cell "700 ms" [ref=e54]
+            - cell "Jun 04, 2026, 06:26 PM" [ref=e55]
+          - row "2 70 Intel(R) Core(TM) i3-14100T 2.70 GHz MS Idd Device Windows 11 Professionnel (build 26200) Mini-PC i3 1,437 ms Jun 04, 2026, 06:26 PM" [ref=e56]:
+            - cell [ref=e57]:
+              - checkbox [ref=e58]
+            - cell "2" [ref=e59]
+            - cell "70" [ref=e60]:
+              - link "70" [ref=e61] [cursor=pointer]:
+                - /url: /runs/X5mrcEx8Oe
+            - cell "Intel(R) Core(TM) i3-14100T" [ref=e62]
+            - cell "2.70 GHz" [ref=e63]
+            - cell "MS Idd Device" [ref=e64]
+            - cell "Windows 11 Professionnel (build 26200)" [ref=e65]
+            - cell "Mini-PC i3" [ref=e66]
+            - cell "1,437 ms" [ref=e67]
+            - cell "Jun 04, 2026, 06:26 PM" [ref=e68]
+  - contentinfo [ref=e69]: Benchmarks run N.I.N.A.'s real image-analysis pipeline. Submitted anonymously via the Benchmark plugin.
