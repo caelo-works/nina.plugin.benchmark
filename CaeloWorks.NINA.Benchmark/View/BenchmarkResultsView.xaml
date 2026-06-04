@@ -43,7 +43,7 @@
                 </Grid.ColumnDefinitions>
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                     <Button HorizontalContentAlignment="Left" Padding="16,6,16,6" Command="{Binding RunBenchmarkCommand}">
-                        <StackPanel Orientation="Horizontal">
+                        <StackPanel Orientation="Horizontal" Margin="10,3">
                             <Path Style="{StaticResource IconPath}" Data="{StaticResource CaeloIcon_Play}" />
                             <TextBlock Margin="7,0,0,0" VerticalAlignment="Center" Text="Run benchmark" />
                         </StackPanel>
@@ -51,7 +51,7 @@
                     <Button Margin="8,0,0,0" HorizontalContentAlignment="Left" Padding="16,6,16,6"
                             Command="{Binding CancelCommand}"
                             Visibility="{Binding IsRunning, Converter={StaticResource BoolToVis}}">
-                        <StackPanel Orientation="Horizontal">
+                        <StackPanel Orientation="Horizontal" Margin="10,3">
                             <Path Style="{StaticResource IconPath}" Data="{StaticResource CaeloIcon_Cancel}" />
                             <TextBlock Margin="7,0,0,0" VerticalAlignment="Center" Text="Cancel" />
                         </StackPanel>
@@ -59,7 +59,7 @@
                     <Button Margin="8,0,0,0" HorizontalContentAlignment="Left" Padding="16,6,16,6"
                             Command="{Binding ClearHistoryCommand}"
                             ToolTip="Remove every saved benchmark run from the history">
-                        <StackPanel Orientation="Horizontal">
+                        <StackPanel Orientation="Horizontal" Margin="10,3">
                             <Path Style="{StaticResource IconPath}" Data="{StaticResource CaeloIcon_Trash}" />
                             <TextBlock Margin="7,0,0,0" VerticalAlignment="Center" Text="Clear all" />
                         </StackPanel>
@@ -127,7 +127,7 @@
                                 <Button Margin="3,2" Padding="14,4,14,4" HorizontalContentAlignment="Left"
                                         Command="{Binding DataContext.ToggleDetailsCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                         CommandParameter="{Binding}">
-                                    <StackPanel Orientation="Horizontal">
+                                    <StackPanel Orientation="Horizontal" Margin="10,3">
                                         <Path Style="{StaticResource IconPath}" Width="13" Height="13" Data="{StaticResource CaeloIcon_Details}" />
                                         <TextBlock Margin="7,0,0,0" VerticalAlignment="Center" Text="Details" />
                                     </StackPanel>

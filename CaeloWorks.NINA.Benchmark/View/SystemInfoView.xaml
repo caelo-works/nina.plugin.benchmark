@@ -40,7 +40,7 @@
                 Padding="16,6,16,6"
                 HorizontalContentAlignment="Left"
                 Command="{Binding RefreshSystemInfoCommand}">
-                <StackPanel Orientation="Horizontal">
+                <StackPanel Orientation="Horizontal" Margin="10,3">
                     <Path Style="{StaticResource IconPath}" Data="{StaticResource CaeloIcon_Refresh}" />
                     <TextBlock Margin="7,0,0,0" VerticalAlignment="Center" Text="Refresh" />
                 </StackPanel>
