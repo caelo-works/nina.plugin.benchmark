@@ -49,9 +49,16 @@ namespace CaeloWorks.NINA.Benchmark.Core {
                 }
             }, firstOnly: true);
 
-            TryQuery("SELECT TotalVisibleMemorySize, FreePhysicalMemory FROM Win32_OperatingSystem", mo => {
+            TryQuery("SELECT Caption, BuildNumber, TotalVisibleMemorySize, FreePhysicalMemory FROM Win32_OperatingSystem", mo => {
                 info.TotalRamGb = ToDouble(mo["TotalVisibleMemorySize"]) / 1024 / 1024;   // KB -> GB
                 info.AvailableRamGb = ToDouble(mo["FreePhysicalMemory"]) / 1024 / 1024;   // KB -> GB
+                // Caption carries the edition, e.g. "Microsoft Windows 11 Pro".
+                var caption = mo["Caption"]?.ToString();
+                var build = mo["BuildNumber"]?.ToString();
+                if (!string.IsNullOrWhiteSpace(caption)) {
+                    caption = caption.Replace("Microsoft ", "").Trim();
+                    info.Os = string.IsNullOrWhiteSpace(build) ? caption : $"{caption} (build {build})";
+                }
             });
 
             info.PowerPlan = GetActivePowerPlan();
