@@ -42,26 +42,26 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Button Padding="18,6,12,6" Command="{Binding RunBenchmarkCommand}">
+                    <Button HorizontalContentAlignment="Left" Padding="18,6,12,6" Command="{Binding RunBenchmarkCommand}">
                         <StackPanel Orientation="Horizontal">
                             <Path Style="{StaticResource IconPath}" Data="{StaticResource CaeloIcon_Play}" />
-                            <TextBlock Margin="9,0,5,0" VerticalAlignment="Center" Text="Run benchmark" />
+                            <TextBlock Margin="7,0,0,0" VerticalAlignment="Center" Text="Run benchmark" />
                         </StackPanel>
                     </Button>
-                    <Button Margin="8,0,0,0" Padding="18,6,12,6"
+                    <Button Margin="8,0,0,0" HorizontalContentAlignment="Left" Padding="18,6,12,6"
                             Command="{Binding CancelCommand}"
                             Visibility="{Binding IsRunning, Converter={StaticResource BoolToVis}}">
                         <StackPanel Orientation="Horizontal">
                             <Path Style="{StaticResource IconPath}" Data="{StaticResource CaeloIcon_Cancel}" />
-                            <TextBlock Margin="9,0,5,0" VerticalAlignment="Center" Text="Cancel" />
+                            <TextBlock Margin="7,0,0,0" VerticalAlignment="Center" Text="Cancel" />
                         </StackPanel>
                     </Button>
-                    <Button Margin="8,0,0,0" Padding="18,6,12,6"
+                    <Button Margin="8,0,0,0" HorizontalContentAlignment="Left" Padding="18,6,12,6"
                             Command="{Binding ClearHistoryCommand}"
                             ToolTip="Remove every saved benchmark run from the history">
                         <StackPanel Orientation="Horizontal">
                             <Path Style="{StaticResource IconPath}" Data="{StaticResource CaeloIcon_Trash}" />
-                            <TextBlock Margin="9,0,5,0" VerticalAlignment="Center" Text="Clear all" />
+                            <TextBlock Margin="7,0,0,0" VerticalAlignment="Center" Text="Clear all" />
                         </StackPanel>
                     </Button>
                     <TextBlock Margin="16,0,4,0" VerticalAlignment="Center" Text="Runs/function:" />
@@ -124,12 +124,12 @@
                     <DataGridTemplateColumn Header="" CanUserResize="False">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <Button Margin="3,2" Padding="16,4,10,4"
+                                <Button Margin="3,2" Padding="14,4,10,4" HorizontalContentAlignment="Left"
                                         Command="{Binding DataContext.ToggleDetailsCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                         CommandParameter="{Binding}">
                                     <StackPanel Orientation="Horizontal">
                                         <Path Style="{StaticResource IconPath}" Width="13" Height="13" Data="{StaticResource CaeloIcon_Details}" />
-                                        <TextBlock Margin="8,0,4,0" VerticalAlignment="Center" Text="Details" />
+                                        <TextBlock Margin="7,0,0,0" VerticalAlignment="Center" Text="Details" />
                                     </StackPanel>
                                 </Button>
                             </DataTemplate>
