@@ -1,0 +1,8 @@
+# Normalize line endings; let Git handle conversion automatically.
+* text=auto
+
+# Treat known image/binary frame formats as binary (and good candidates for Git LFS).
+*.fits binary
+*.fit  binary
+*.fts  binary
+*.xisf binary
