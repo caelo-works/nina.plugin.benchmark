@@ -22,7 +22,7 @@
             <Setter Property="StrokeEndLineCap" Value="Round" />
             <Setter Property="StrokeLineJoin" Value="Round" />
             <Setter Property="VerticalAlignment" Value="Center" />
-            <Setter Property="Stroke" Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+            <Setter Property="Stroke" Value="{DynamicResource ButtonForegroundBrush}" />
         </Style>
     </UserControl.Resources>
     <GroupBox Header="Benchmark results" Margin="5">

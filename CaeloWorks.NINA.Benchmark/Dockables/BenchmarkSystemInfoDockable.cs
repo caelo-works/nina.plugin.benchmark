@@ -9,7 +9,10 @@
 #endregion "copyright"
 using System.ComponentModel.Composition;
 using CaeloWorks.NINA.Benchmark.Core;
+using NINA.Core.Interfaces;
 using NINA.Equipment.Interfaces.ViewModel;
+using NINA.Image.ImageAnalysis;
+using NINA.Image.Interfaces;
 using NINA.Profile.Interfaces;
 using NINA.WPF.Base.ViewModel;
 
@@ -23,8 +26,9 @@ namespace CaeloWorks.NINA.Benchmark.Dockables {
     public class BenchmarkSystemInfoDockable : DockableVM {
 
         [ImportingConstructor]
-        public BenchmarkSystemInfoDockable(IProfileService profileService, BenchmarkEngine engine) : base(profileService) {
-            Engine = engine;
+        public BenchmarkSystemInfoDockable(IProfileService profileService, IImageDataFactory imageDataFactory,
+            IPluggableBehaviorSelector<IStarDetection> starDetectionSelector) : base(profileService) {
+            Engine = BenchmarkEngine.GetInstance(profileService, imageDataFactory, starDetectionSelector);
             Title = "Benchmark — System";
             CanClose = true;
             ImageGeometry = BenchmarkIcons.Cpu;

@@ -9,8 +9,12 @@
 #endregion "copyright"
 using System.ComponentModel.Composition;
 using CaeloWorks.NINA.Benchmark.Core;
+using NINA.Core.Interfaces;
+using NINA.Image.ImageAnalysis;
+using NINA.Image.Interfaces;
 using NINA.Plugin;
 using NINA.Plugin.Interfaces;
+using NINA.Profile.Interfaces;
 
 namespace CaeloWorks.NINA.Benchmark {
 
@@ -22,8 +26,9 @@ namespace CaeloWorks.NINA.Benchmark {
     public class BenchmarkPlugin : PluginBase {
 
         [ImportingConstructor]
-        public BenchmarkPlugin(BenchmarkEngine engine) {
-            Engine = engine;
+        public BenchmarkPlugin(IProfileService profileService, IImageDataFactory imageDataFactory,
+            IPluggableBehaviorSelector<IStarDetection> starDetectionSelector) {
+            Engine = BenchmarkEngine.GetInstance(profileService, imageDataFactory, starDetectionSelector);
         }
 
         /// <summary>Shared engine driving both the Options page and the Imaging dockables.</summary>

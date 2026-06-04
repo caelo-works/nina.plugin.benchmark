@@ -10,7 +10,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -28,11 +27,10 @@ namespace CaeloWorks.NINA.Benchmark.Core {
 
     /// <summary>
     /// Shared, long-lived service that owns the benchmark state (system info, history, run command).
-    /// A single instance is composed by MEF and bound by both the plugin Options page and the two
-    /// Imaging dockables, so all three views stay in sync with zero duplicated logic.
+    /// Exposed as a process-wide singleton via <see cref="GetInstance"/> rather than a MEF export, so
+    /// the plugin Options page and the two Imaging dockables bind the very same instance even though
+    /// N.I.N.A. composes the plugin manifest and the dockables in separate passes.
     /// </summary>
-    [Export(typeof(BenchmarkEngine))]
-    [PartCreationPolicy(CreationPolicy.Shared)]
     public partial class BenchmarkEngine : ObservableObject {
         private static readonly string[] FrameExtensions = { ".fits", ".fit", ".fts", ".xisf" };
         private static readonly string[] BayerHints = { "osc", "color", "colour", "bayer", "rggb" };
@@ -61,8 +59,23 @@ namespace CaeloWorks.NINA.Benchmark.Core {
 
         public string TestImagesFolder { get; }
 
-        [ImportingConstructor]
-        public BenchmarkEngine(IProfileService profileService, IImageDataFactory imageDataFactory,
+        private static BenchmarkEngine instance;
+        private static readonly object gate = new object();
+
+        /// <summary>Returns the single shared engine, creating it from the injected services on first use.</summary>
+        public static BenchmarkEngine GetInstance(IProfileService profileService, IImageDataFactory imageDataFactory,
+            IPluggableBehaviorSelector<IStarDetection> starDetectionSelector) {
+            if (instance == null) {
+                lock (gate) {
+                    if (instance == null) {
+                        instance = new BenchmarkEngine(profileService, imageDataFactory, starDetectionSelector);
+                    }
+                }
+            }
+            return instance;
+        }
+
+        private BenchmarkEngine(IProfileService profileService, IImageDataFactory imageDataFactory,
             IPluggableBehaviorSelector<IStarDetection> starDetectionSelector) {
             this.profileService = profileService;
             this.imageDataFactory = imageDataFactory;
