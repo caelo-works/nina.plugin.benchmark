@@ -30,19 +30,24 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyCopyright("Copyright © 2026 CaeloWorks")]
 
 // [MANDATORY] A short one-line summary shown in the plugin list.
-[assembly: AssemblyMetadata("ShortDescription", "Benchmarks your machine by running N.I.N.A.'s real image-processing pipeline (load, debayer, statistics, stretch, star detection) over bundled test frames.")]
+[assembly: AssemblyMetadata("ShortDescription", "Benchmarks your machine by timing N.I.N.A.'s real image-analysis primitives (debayer, stretch remap, resize, blur, Canny, SIS threshold, dilation, blob counter, star detection) over bundled test frames.")]
 
 // [OPTIONAL] A longer description (markdown supported by N.I.N.A.).
-[assembly: AssemblyMetadata("LongDescription", @"This plugin measures how fast your machine processes images the same way N.I.N.A. does after every exposure.
+[assembly: AssemblyMetadata("LongDescription", @"This plugin measures how fast your machine runs the genuine N.I.N.A. / Accord image-analysis routines that make up the post-capture pipeline. Each function is invoked exactly the way N.I.N.A. invokes it (same input pixel formats, same constructor arguments, same chain order) over the bundled test frames.
 
-For each bundled test frame it runs the genuine N.I.N.A. internals:
-- file load/decode,
-- bayer debayering (for OSC frames),
-- image statistics (mean/median/stddev/MAD/histogram),
-- auto-stretch,
-- star detection (HFR + star count).
+Measured per frame:
+- BayerFilter16bpp — debayering (OSC frames),
+- ColorRemappingGeneral — the auto-stretch pixel remap,
+- FastGaussianBlur — noise reduction,
+- ResizeBicubic — downscale to detection size,
+- CannyEdgeDetector and NoBlurCannyEdgeDetector — edge detection,
+- SISThreshold — thresholding,
+- BinaryDilation3x3 — dilation,
+- Convolution — a Laplacian-of-Gaussian kernel pass,
+- BlobCounter — structure/blob detection,
+- StarDetection — the full detector (HFR + star count), shown but excluded from the score as a superset of the primitives.
 
-Each step is timed and aggregated into per-step results and an overall score, so you can compare mini-PCs, NUCs and laptops on the real acquisition workload. A system-information panel (CPU, frequency, power plan, GPU, RAM) and the history of the latest runs are available both on the plugin page and as dockables on the Imaging view.")]
+Each function is timed (one warm-up pass, then the mean of N runs) and aggregated into a per-function breakdown plus an overall score, so you can compare mini-PCs, NUCs and laptops on the real acquisition workload. A system-information panel (CPU, frequency, power plan, GPU, RAM) and the history of the latest runs (with best score and a clear-all action) are available both on the plugin page and as dockables on the Imaging view.")]
 
 // [OPTIONAL] Metadata.
 [assembly: AssemblyMetadata("Author", "CaeloWorks")]
