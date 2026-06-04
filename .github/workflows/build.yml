@@ -1,0 +1,35 @@
+name: Build plugin
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore
+        run: dotnet restore CaeloWorks.NINA.Benchmark/CaeloWorks.NINA.Benchmark.csproj
+
+      - name: Build
+        run: dotnet build CaeloWorks.NINA.Benchmark/CaeloWorks.NINA.Benchmark.csproj -c Release --no-restore
+
+      - name: Upload plugin artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: CaeloWorks.NINA.Benchmark
+          path: |
+            CaeloWorks.NINA.Benchmark/bin/Release/net8.0-windows/CaeloWorks.NINA.Benchmark.dll
+            CaeloWorks.NINA.Benchmark/bin/Release/net8.0-windows/TestImages/**
+          if-no-files-found: error

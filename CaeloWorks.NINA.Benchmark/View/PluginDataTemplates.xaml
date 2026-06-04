@@ -1,0 +1,32 @@
+<ResourceDictionary
+    x:Class="CaeloWorks.NINA.Benchmark.View.PluginDataTemplates"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:view="clr-namespace:CaeloWorks.NINA.Benchmark.View">
+
+    <!--
+        Plugin Options page. N.I.N.A. resolves this by the key "<PluginName>_Options" and binds it
+        to the IPluginManifest instance (BenchmarkPlugin), which exposes the shared Engine.
+    -->
+    <DataTemplate x:Key="Benchmark_Options">
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel Orientation="Vertical" DataContext="{Binding Engine}">
+                <view:SystemInfoView />
+                <view:BenchmarkResultsView MinHeight="320" />
+            </StackPanel>
+        </ScrollViewer>
+    </DataTemplate>
+
+    <!--
+        Imaging dockables. N.I.N.A. resolves each by the key "<FullyQualifiedVmType>_Dockable" and
+        binds it to the dockable VM instance, which exposes the same shared Engine.
+    -->
+    <DataTemplate x:Key="CaeloWorks.NINA.Benchmark.Dockables.BenchmarkSystemInfoDockable_Dockable">
+        <view:SystemInfoView DataContext="{Binding Engine}" />
+    </DataTemplate>
+
+    <DataTemplate x:Key="CaeloWorks.NINA.Benchmark.Dockables.BenchmarkResultsDockable_Dockable">
+        <view:BenchmarkResultsView DataContext="{Binding Engine}" />
+    </DataTemplate>
+
+</ResourceDictionary>

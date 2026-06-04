@@ -1,0 +1,81 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <OutputType>Library</OutputType>
+    <Platforms>x64</Platforms>
+    <PlatformTarget>x64</PlatformTarget>
+    <RootNamespace>CaeloWorks.NINA.Benchmark</RootNamespace>
+    <AssemblyName>CaeloWorks.NINA.Benchmark</AssemblyName>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <!--
+      The plugin is loaded by N.I.N.A., which already provides every referenced assembly
+      (NINA.*, CommunityToolkit.Mvvm, System.Management, WebView2, …). We therefore copy NONE of
+      them next to the plugin DLL to avoid duplicate-assembly conflicts at load time.
+    -->
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+
+  <!--
+    N.I.N.A. assemblies. They are provided by the running host application, so we reference them
+    for compilation only (ExcludeAssets=runtime) and do NOT copy them next to the plugin DLL.
+  -->
+  <ItemGroup>
+    <PackageReference Include="NINA.Plugin" Version="3.2.0.9001" ExcludeAssets="runtime" />
+    <PackageReference Include="NINA.Core" Version="3.2.0.9001" ExcludeAssets="runtime" />
+    <PackageReference Include="NINA.Image" Version="3.2.0.9001" ExcludeAssets="runtime" />
+    <PackageReference Include="NINA.Profile" Version="3.2.0.9001" ExcludeAssets="runtime" />
+    <PackageReference Include="NINA.Equipment" Version="3.2.0.9001" ExcludeAssets="runtime" />
+    <PackageReference Include="NINA.Astrometry" Version="3.2.0.9001" ExcludeAssets="runtime" />
+    <PackageReference Include="NINA.WPF.Base" Version="3.2.0.9001" ExcludeAssets="runtime" />
+  </ItemGroup>
+
+  <!-- Shipped by N.I.N.A. as well; reference for compile only to avoid duplicate-assembly conflicts. -->
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" ExcludeAssets="runtime" />
+  </ItemGroup>
+
+  <!-- Provided by the host as well; reference for compile only. -->
+  <ItemGroup>
+    <PackageReference Include="System.Management" Version="8.0.0" ExcludeAssets="runtime" />
+  </ItemGroup>
+
+  <!--
+    Pulled in transitively by NINA. Its NuGet .targets force-copy WebView2 managed + native binaries
+    into the output regardless of CopyLocalLockFileAssemblies. The host already ships them, so
+    neutralize the reference entirely (no compile/build/runtime/native assets).
+  -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3296.44" ExcludeAssets="all" />
+  </ItemGroup>
+
+  <!-- Bundled test frames, copied next to the plugin DLL. -->
+  <ItemGroup>
+    <Content Include="TestImages\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>TestImages\%(RecursiveDir)%(Filename)%(Extension)</Link>
+    </Content>
+  </ItemGroup>
+
+  <!--
+    Optional convenience deploy to the local N.I.N.A. plugin folder. Enable with:
+      dotnet build -c Release -p:NinaDeploy=true
+    Disabled by default and in CI.
+  -->
+  <Target Name="DeployToNina" AfterTargets="Build" Condition="'$(NinaDeploy)' == 'true' and '$(CI)' != 'true'">
+    <PropertyGroup>
+      <NinaPluginDir>$(LOCALAPPDATA)\NINA\Plugins\3.0.0\CaeloWorks.NINA.Benchmark</NinaPluginDir>
+    </PropertyGroup>
+    <ItemGroup>
+      <DeployFiles Include="$(TargetDir)**\*" />
+    </ItemGroup>
+    <RemoveDir Directories="$(NinaPluginDir)" />
+    <MakeDir Directories="$(NinaPluginDir)" />
+    <Copy SourceFiles="@(DeployFiles)" DestinationFiles="@(DeployFiles->'$(NinaPluginDir)\%(RecursiveDir)%(Filename)%(Extension)')" />
+  </Target>
+
+</Project>
