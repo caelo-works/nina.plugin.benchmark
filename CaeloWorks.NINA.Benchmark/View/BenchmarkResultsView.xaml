@@ -115,6 +115,14 @@
             <DataGrid Grid.Row="3" ItemsSource="{Binding History}"
                       AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="True"
                       HeadersVisibility="Column" GridLinesVisibility="Horizontal">
+                <DataGrid.Resources>
+                    <!-- Keep selected-row text readable when the grid loses focus (the default cell
+                         template otherwise falls back to black system "inactive selection" colours). -->
+                    <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="#2A3550" />
+                    <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="#FFFFFF" />
+                    <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}" Color="#222B40" />
+                    <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}" Color="#E2E8F0" />
+                </DataGrid.Resources>
                 <DataGrid.RowStyle>
                     <!-- Inherit N.I.N.A.'s themed row style, only adding the expand binding. -->
                     <Style TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
