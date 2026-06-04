@@ -63,16 +63,18 @@
                                 <Grid Margin="2,1">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="240" />
-                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="90" />
+                                        <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
                                     <TextBlock Grid.Column="0" Text="{Binding Name}" FontFamily="Consolas,Courier New" />
-                                    <TextBlock Grid.Column="1" Text="{Binding Display}" FontFamily="Consolas,Courier New" />
+                                    <TextBlock Grid.Column="1" Text="{Binding Display}" FontFamily="Consolas,Courier New" TextAlignment="Right" />
+                                    <TextBlock Grid.Column="2" Margin="8,0,0,0" Text="{Binding Note}" Opacity="0.6" FontStyle="Italic" />
                                 </Grid>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                     <TextBlock Margin="2,6,0,0" FontWeight="Bold" FontFamily="Consolas,Courier New"
-                               Text="{Binding LatestResult.TotalMs, StringFormat='Total (score basis): {0:N2} ms'}" />
+                               Text="{Binding LatestResult.TotalMs, StringFormat='Total (primitives only = score basis): {0:N2} ms'}" />
                 </StackPanel>
             </GroupBox>
 
@@ -127,16 +129,18 @@
                                                 <Grid Margin="0,1">
                                                     <Grid.ColumnDefinitions>
                                                         <ColumnDefinition Width="220" />
-                                                        <ColumnDefinition Width="Auto" />
+                                                        <ColumnDefinition Width="90" />
+                                                        <ColumnDefinition Width="*" />
                                                     </Grid.ColumnDefinitions>
                                                     <TextBlock Grid.Column="0" FontFamily="Consolas,Courier New" Text="{Binding Name}" />
-                                                    <TextBlock Grid.Column="1" FontFamily="Consolas,Courier New" Text="{Binding Display}" />
+                                                    <TextBlock Grid.Column="1" FontFamily="Consolas,Courier New" TextAlignment="Right" Text="{Binding Display}" />
+                                                    <TextBlock Grid.Column="2" Margin="8,0,0,0" Opacity="0.6" FontStyle="Italic" Text="{Binding Note}" />
                                                 </Grid>
                                             </DataTemplate>
                                         </ItemsControl.ItemTemplate>
                                     </ItemsControl>
-                                    <TextBlock Margin="0,6,0,0" FontFamily="Consolas,Courier New"
-                                               Text="{Binding TotalMs, StringFormat='Total: {0:N2} ms'}" />
+                                    <TextBlock Margin="0,6,0,0" FontWeight="Bold" FontFamily="Consolas,Courier New"
+                                               Text="{Binding TotalMs, StringFormat='Total (primitives only = score basis): {0:N2} ms'}" />
                                 </StackPanel>
                             </Grid>
                         </Border>

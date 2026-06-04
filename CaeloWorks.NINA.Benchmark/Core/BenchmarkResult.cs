@@ -25,6 +25,9 @@ namespace CaeloWorks.NINA.Benchmark.Core {
         public bool IncludeInTotal { get; set; } = true;
 
         public string Display => Applicable ? $"{Ms:N2} ms" : "n/a";
+
+        /// <summary>Note shown next to functions that are measured but not summed into the score.</summary>
+        public string Note => IncludeInTotal ? string.Empty : "(not in total — superset)";
     }
 
     /// <summary>
