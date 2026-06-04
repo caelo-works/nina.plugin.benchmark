@@ -8,30 +8,41 @@
 */
 #endregion "copyright"
 using System;
+using System.Collections.Generic;
 
 namespace CaeloWorks.NINA.Benchmark.Core {
 
+    /// <summary>Timing of a single benchmarked function, summed over the frames it applied to.</summary>
+    public class FunctionResult {
+        public string Name { get; set; }
+        /// <summary>Mean time of one application, summed across all frames the function ran on (ms).</summary>
+        public double Ms { get; set; }
+        public int Runs { get; set; }
+        public bool Applicable { get; set; } = true;
+        /// <summary>Whether this function counts toward the overall score (the full StarDetection does not — it is a superset of the primitives).</summary>
+        public bool IncludeInTotal { get; set; } = true;
+
+        public string Display => Applicable ? $"{Ms:N2} ms" : "n/a";
+    }
+
     /// <summary>
-    /// Aggregated outcome of a single benchmark run. Times are the mean per-iteration totals (ms)
-    /// across all processed frames; the score is derived so that higher is faster.
+    /// Aggregated outcome of a single benchmark run: one <see cref="FunctionResult"/> per measured
+    /// NINA/Accord primitive, plus an overall score (higher is faster).
     /// </summary>
     public class BenchmarkResult {
         public DateTime TimestampUtc { get; set; }
         public int ImageCount { get; set; }
-        public int Iterations { get; set; }
+        public int Runs { get; set; }
 
-        public double LoadMs { get; set; }
-        public double DebayerMs { get; set; }
-        public double StatisticsMs { get; set; }
-        public double StretchMs { get; set; }
-        public double StarDetectionMs { get; set; }
+        public List<FunctionResult> Functions { get; set; } = new List<FunctionResult>();
+
         public double TotalMs { get; set; }
-
-        public int TotalStarsDetected { get; set; }
         public int Score { get; set; }
+        public int TotalStarsDetected { get; set; }
 
         public SystemInfo System { get; set; }
 
         public string DisplayTimestamp => TimestampUtc.ToLocalTime().ToString("yyyy-MM-dd HH:mm");
+        public string CpuShort => System?.Cpu;
     }
 }

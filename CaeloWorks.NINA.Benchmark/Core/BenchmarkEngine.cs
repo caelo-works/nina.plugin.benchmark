@@ -53,6 +53,9 @@ namespace CaeloWorks.NINA.Benchmark.Core {
 
         public ObservableCollection<BenchmarkResult> History { get; }
 
+        /// <summary>Most recent run, used by the UI to show the per-function breakdown.</summary>
+        public BenchmarkResult LatestResult => History.Count > 0 ? History[0] : null;
+
         public string TestImagesFolder { get; }
 
         [ImportingConstructor]
@@ -104,8 +107,9 @@ namespace CaeloWorks.NINA.Benchmark.Core {
                 while (History.Count > BenchmarkResultStore.MaxEntries) {
                     History.RemoveAt(History.Count - 1);
                 }
+                OnPropertyChanged(nameof(LatestResult));
                 store.Save(History);
-                StatusText = $"Done — score {result.Score} ({result.TotalMs:0} ms / pass)";
+                StatusText = $"Done — score {result.Score} ({result.TotalMs:0} ms total)";
             } catch (OperationCanceledException) {
                 StatusText = "Cancelled";
             } catch (Exception ex) {

@@ -5,7 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    d:DesignHeight="320" d:DesignWidth="560">
+    d:DesignHeight="460" d:DesignWidth="560">
     <!-- DataContext is expected to be a BenchmarkEngine -->
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
@@ -15,22 +15,17 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
             <!-- Controls -->
             <StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center">
-                <Button
-                    Padding="12,4"
-                    Content="Run benchmark"
-                    Command="{Binding RunBenchmarkCommand}" />
-                <Button
-                    Margin="6,0,0,0"
-                    Padding="12,4"
-                    Content="Cancel"
-                    Command="{Binding CancelCommand}"
-                    Visibility="{Binding IsRunning, Converter={StaticResource BoolToVis}}" />
-                <TextBlock Margin="16,0,4,0" VerticalAlignment="Center" Text="Iterations:" />
+                <Button Padding="12,4" Content="Run benchmark" Command="{Binding RunBenchmarkCommand}" />
+                <Button Margin="6,0,0,0" Padding="12,4" Content="Cancel"
+                        Command="{Binding CancelCommand}"
+                        Visibility="{Binding IsRunning, Converter={StaticResource BoolToVis}}" />
+                <TextBlock Margin="16,0,4,0" VerticalAlignment="Center" Text="Runs/function:" />
                 <TextBox Width="40" VerticalAlignment="Center" Text="{Binding Iterations, UpdateSourceTrigger=PropertyChanged}" />
             </StackPanel>
 
@@ -40,38 +35,44 @@
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-                <ProgressBar
-                    Grid.Column="0"
-                    Height="14"
-                    Minimum="0" Maximum="1"
-                    Value="{Binding ProgressValue}" />
-                <TextBlock
-                    Grid.Column="1"
-                    Margin="8,0,0,0"
-                    VerticalAlignment="Center"
-                    Text="{Binding StatusText}" />
+                <ProgressBar Grid.Column="0" Height="14" Minimum="0" Maximum="1" Value="{Binding ProgressValue}" />
+                <TextBlock Grid.Column="1" Margin="8,0,0,0" VerticalAlignment="Center" Text="{Binding StatusText}" />
             </Grid>
 
+            <!-- Latest run: per-function breakdown -->
+            <GroupBox Grid.Row="2" Margin="0,0,0,8" Header="Latest run — per function"
+                      Visibility="{Binding LatestResult, Converter={StaticResource BoolToVis}, FallbackValue=Collapsed}">
+                <StackPanel>
+                    <ItemsControl ItemsSource="{Binding LatestResult.Functions}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="2,1">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="240" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="{Binding Name}" FontFamily="Consolas,Courier New" />
+                                    <TextBlock Grid.Column="1" Text="{Binding Display}" FontFamily="Consolas,Courier New" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <TextBlock Margin="2,6,0,0" FontWeight="Bold" FontFamily="Consolas,Courier New"
+                               Text="{Binding LatestResult.TotalMs, StringFormat='Total (score basis): {0:N2} ms'}" />
+                </StackPanel>
+            </GroupBox>
+
             <!-- History -->
-            <DataGrid
-                Grid.Row="2"
-                ItemsSource="{Binding History}"
-                AutoGenerateColumns="False"
-                CanUserAddRows="False"
-                IsReadOnly="True"
-                HeadersVisibility="Column"
-                GridLinesVisibility="Horizontal">
+            <DataGrid Grid.Row="3" ItemsSource="{Binding History}"
+                      AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="True"
+                      HeadersVisibility="Column" GridLinesVisibility="Horizontal">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Date" Binding="{Binding DisplayTimestamp}" />
                     <DataGridTextColumn Header="Score" Binding="{Binding Score}" />
                     <DataGridTextColumn Header="Total (ms)" Binding="{Binding TotalMs, StringFormat=N0}" />
-                    <DataGridTextColumn Header="Load" Binding="{Binding LoadMs, StringFormat=N0}" />
-                    <DataGridTextColumn Header="Debayer" Binding="{Binding DebayerMs, StringFormat=N0}" />
-                    <DataGridTextColumn Header="Stats" Binding="{Binding StatisticsMs, StringFormat=N0}" />
-                    <DataGridTextColumn Header="Stretch" Binding="{Binding StretchMs, StringFormat=N0}" />
-                    <DataGridTextColumn Header="StarDet" Binding="{Binding StarDetectionMs, StringFormat=N0}" />
                     <DataGridTextColumn Header="Stars" Binding="{Binding TotalStarsDetected}" />
-                    <DataGridTextColumn Header="CPU" Binding="{Binding System.Cpu}" />
+                    <DataGridTextColumn Header="Runs" Binding="{Binding Runs}" />
+                    <DataGridTextColumn Header="CPU" Binding="{Binding CpuShort}" Width="*" />
                 </DataGrid.Columns>
             </DataGrid>
         </Grid>

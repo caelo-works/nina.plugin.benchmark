@@ -10,13 +10,18 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Accord.Imaging;
+using Accord.Imaging.Filters;
 using NINA.Core.Enum;
 using NINA.Core.Model;
 using NINA.Image.ImageAnalysis;
 using NINA.Image.Interfaces;
 using NINA.Profile.Interfaces;
+using DrawingPixelFormat = System.Drawing.Imaging.PixelFormat;
 
 namespace CaeloWorks.NINA.Benchmark.Core {
 
@@ -35,11 +40,37 @@ namespace CaeloWorks.NINA.Benchmark.Core {
     }
 
     /// <summary>
-    /// Runs N.I.N.A.'s genuine post-capture image pipeline over a set of test frames and times each
-    /// step. Nothing is re-implemented here: the exact same factory, debayer, statistics, stretch and
-    /// star-detection code paths used during a real exposure are exercised.
+    /// Times the individual NINA / Accord image primitives that make up the post-capture pipeline,
+    /// invoking them exactly as <c>StarDetection</c>/<c>ImageUtility</c> do (same input pixel formats,
+    /// same constructor arguments, same chain order). Nothing is re-implemented.
     /// </summary>
     public class BenchmarkRunner {
+        // Canonical detection downscale width, matching StarDetection._maxWidth.
+        private const int MaxWidth = 1552;
+
+        // Function labels (kept stable for the history JSON).
+        private const string FnBayer = "BayerFilter16bpp (debayer)";
+        private const string FnColorRemap = "ColorRemappingGeneral (stretch)";
+        private const string FnFastBlur = "FastGaussianBlur";
+        private const string FnResize = "ResizeBicubic";
+        private const string FnCanny = "CannyEdgeDetector";
+        private const string FnNoBlurCanny = "NoBlurCannyEdgeDetector";
+        private const string FnSis = "SISThreshold";
+        private const string FnDilation = "BinaryDilation3x3";
+        private const string FnConvolution = "Convolution (LoG 5x5)";
+        private const string FnBlob = "BlobCounter";
+        private const string FnStarDetection = "StarDetection (full)";
+
+        // Representative 5x5 Laplacian-of-Gaussian kernel for the Convolution micro-benchmark
+        // (NINA defines a LoG builder but no longer feeds Accord's Convolution itself).
+        private static readonly int[,] LogKernel5 = {
+            {  0,  0, -1,  0,  0 },
+            {  0, -1, -2, -1,  0 },
+            { -1, -2, 16, -2, -1 },
+            {  0, -1, -2, -1,  0 },
+            {  0,  0, -1,  0,  0 }
+        };
+
         private readonly IProfileService profileService;
         private readonly IImageDataFactory imageDataFactory;
         private readonly IStarDetection starDetection;
@@ -50,100 +81,238 @@ namespace CaeloWorks.NINA.Benchmark.Core {
             this.starDetection = starDetection;
         }
 
-        public async Task<BenchmarkResult> RunAsync(IReadOnlyList<TestFrame> frames, int iterations,
+        public async Task<BenchmarkResult> RunAsync(IReadOnlyList<TestFrame> frames, int runs,
             IProgress<BenchmarkProgress> progress, CancellationToken token) {
 
             if (frames == null || frames.Count == 0) {
                 throw new InvalidOperationException("No test frames found. Add FITS/XISF frames to the plugin's TestImages folder.");
             }
-            if (iterations < 1) { iterations = 1; }
+            if (runs < 1) { runs = 1; }
 
-            var imageSettings = profileService.ActiveProfile.ImageSettings;
-            var detectionProgress = new Progress<ApplicationStatus>();
+            var acc = new FunctionAccumulator();
+            var lastStars = 0;
 
-            // The first pass warms caches/JIT and is excluded from the measurement when possible.
-            var measuredIterations = iterations > 1 ? iterations - 1 : 1;
-            double sumLoad = 0, sumDebayer = 0, sumStats = 0, sumStretch = 0, sumDetect = 0;
-            int lastStarCount = 0;
+            for (var i = 0; i < frames.Count; i++) {
+                token.ThrowIfCancellationRequested();
+                var frame = frames[i];
+                progress?.Report(new BenchmarkProgress {
+                    Fraction = (double)i / frames.Count,
+                    Status = $"Processing {frame.Name} ({i + 1}/{frames.Count})…"
+                });
 
-            var totalUnits = (double)iterations * frames.Count;
-            var unit = 0;
-
-            for (var i = 0; i < iterations; i++) {
-                var measure = iterations == 1 || i > 0;
-                lastStarCount = 0;
-
-                foreach (var frame in frames) {
-                    token.ThrowIfCancellationRequested();
-                    progress?.Report(new BenchmarkProgress {
-                        Fraction = unit / totalUnits,
-                        Status = $"Iteration {i + 1}/{iterations} — {frame.Name}"
-                    });
-
-                    var sw = Stopwatch.StartNew();
-                    var imageData = await imageDataFactory.CreateFromFile(frame.Path, 16, frame.IsBayered, RawConverterEnum.FREEIMAGE, token);
-                    var loadMs = sw.Elapsed.TotalMilliseconds;
-
-                    // Render to a bitmap source (the form star detection / stretch consume).
-                    IRenderedImage rendered = imageData.RenderImage();
-
-                    double debayerMs = 0;
-                    if (frame.IsBayered) {
-                        sw.Restart();
-                        rendered = rendered.Debayer(saveColorChannels: false, saveLumChannel: false, bayerPattern: frame.BayerPattern);
-                        debayerMs = sw.Elapsed.TotalMilliseconds;
-                    }
-
-                    sw.Restart();
-                    await imageData.Statistics;
-                    var statsMs = sw.Elapsed.TotalMilliseconds;
-
-                    sw.Restart();
-                    var stretched = await rendered.Stretch(imageSettings.AutoStretchFactor, imageSettings.BlackClipping, unlinked: frame.IsBayered);
-                    var stretchMs = sw.Elapsed.TotalMilliseconds;
-
-                    sw.Restart();
-                    var p = new StarDetectionParams {
-                        Sensitivity = imageSettings.StarSensitivity,
-                        NoiseReduction = imageSettings.NoiseReduction
-                    };
-                    StarDetectionResult detection = await starDetection.Detect(stretched, stretched.Image.Format, p, detectionProgress, token);
-                    var detectMs = sw.Elapsed.TotalMilliseconds;
-                    lastStarCount += detection?.DetectedStars ?? 0;
-
-                    if (measure) {
-                        sumLoad += loadMs;
-                        sumDebayer += debayerMs;
-                        sumStats += statsMs;
-                        sumStretch += stretchMs;
-                        sumDetect += detectMs;
-                    }
-                    unit++;
-                }
+                lastStars += await RunFrameAsync(frame, runs, acc, progress, i, frames.Count, token);
             }
 
-            var load = sumLoad / measuredIterations;
-            var debayer = sumDebayer / measuredIterations;
-            var stats = sumStats / measuredIterations;
-            var stretch = sumStretch / measuredIterations;
-            var detect = sumDetect / measuredIterations;
-            var total = load + debayer + stats + stretch + detect;
+            var functions = acc.Build();
+            var total = functions.Where(f => f.IncludeInTotal && f.Applicable).Sum(f => f.Ms);
 
             progress?.Report(new BenchmarkProgress { Fraction = 1.0, Status = "Done" });
 
             return new BenchmarkResult {
                 TimestampUtc = DateTime.UtcNow,
                 ImageCount = frames.Count,
-                Iterations = iterations,
-                LoadMs = load,
-                DebayerMs = debayer,
-                StatisticsMs = stats,
-                StretchMs = stretch,
-                StarDetectionMs = detect,
+                Runs = runs,
+                Functions = functions,
                 TotalMs = total,
-                TotalStarsDetected = lastStarCount,
+                TotalStarsDetected = lastStars,
                 Score = total > 0 ? (int)Math.Round(100000.0 / total) : 0
             };
+        }
+
+        private async Task<int> RunFrameAsync(TestFrame frame, int runs, FunctionAccumulator acc,
+            IProgress<BenchmarkProgress> progress, int frameIndex, int frameCount, CancellationToken token) {
+
+            var imageData = await imageDataFactory.CreateFromFile(frame.Path, 16, frame.IsBayered, RawConverterEnum.FREEIMAGE, token);
+
+            var src16 = imageData.RenderBitmapSource();                                        // Gray16 BitmapSource
+            Bitmap bmp16 = null, bmp8full = null, bmp8small = null, cannyBase = null, sisBase = null, prepared = null;
+            var starCount = 0;
+            try {
+                // 16bpp gray GDI+ bitmap (input for debayer + stretch remap).
+                bmp16 = ImageUtility.BitmapFromSource(src16, DrawingPixelFormat.Format16bppGrayScale);
+                // 8bpp indexed grayscale (input for the whole structure-detection chain).
+                bmp8full = ImageUtility.Convert16BppTo8Bpp(src16);
+
+                void Step(string s) => progress?.Report(new BenchmarkProgress {
+                    Fraction = (double)frameIndex / frameCount,
+                    Status = $"{frame.Name}: {s}"
+                });
+
+                // --- Debayer (OSC frames only) ---
+                if (frame.IsBayered) {
+                    Step("BayerFilter16bpp");
+                    var pattern = BayerPatternFor(frame.BayerPattern);
+                    acc.Add(FnBayer, TimeNew(() => {
+                        var f = new BayerFilter16bpp { SaveColorChannels = false, SaveLumChannel = false, BayerPattern = pattern };
+                        return f.Apply(bmp16);
+                    }, runs), runs);
+                }
+
+                // --- Stretch color remapping (16bpp gray, in place) ---
+                Step("ColorRemappingGeneral");
+                var map = IdentityMap16();
+                acc.Add(FnColorRemap, TimeInPlace(bmp16, b => new ColorRemappingGeneral(map).ApplyInPlace(b), runs), runs);
+
+                // --- Noise reduction on full-res 8bpp (returns a new bitmap) ---
+                Step("FastGaussianBlur");
+                acc.Add(FnFastBlur, TimeNew(() => new FastGaussianBlur(bmp8full).Process(1), runs), runs);
+
+                // --- Downscale to detection size ---
+                var factor = bmp8full.Width > MaxWidth ? (double)MaxWidth / bmp8full.Width : 1.0;
+                var tw = Math.Max(1, (int)Math.Floor(bmp8full.Width * factor));
+                var th = Math.Max(1, (int)Math.Floor(bmp8full.Height * factor));
+                Step("ResizeBicubic");
+                acc.Add(FnResize, TimeNew(() => new ResizeBicubic(tw, th).Apply(bmp8full), runs), runs);
+
+                // Resized base for the structure-detection chain (built once, untimed).
+                bmp8small = new ResizeBicubic(tw, th).Apply(bmp8full);
+
+                // --- Canny edge detection (in place) ---
+                Step("CannyEdgeDetector");
+                acc.Add(FnCanny, TimeInPlace(bmp8small, b => new CannyEdgeDetector(10, 80).ApplyInPlace(b), runs), runs);
+                Step("NoBlurCannyEdgeDetector");
+                acc.Add(FnNoBlurCanny, TimeInPlace(bmp8small, b => new NoBlurCannyEdgeDetector(10, 80).ApplyInPlace(b), runs), runs);
+
+                // --- Convolution (LoG), in place ---
+                Step("Convolution");
+                acc.Add(FnConvolution, TimeInPlace(bmp8small, b => new Convolution(LogKernel5, 1).ApplyInPlace(b), runs), runs);
+
+                // SISThreshold runs on a Canny output; dilation on a thresholded image; blob on the dilated one.
+                cannyBase = (Bitmap)bmp8small.Clone();
+                new CannyEdgeDetector(10, 80).ApplyInPlace(cannyBase);
+                Step("SISThreshold");
+                acc.Add(FnSis, TimeInPlace(cannyBase, b => new SISThreshold().ApplyInPlace(b), runs), runs);
+
+                sisBase = (Bitmap)cannyBase.Clone();
+                new SISThreshold().ApplyInPlace(sisBase);
+                Step("BinaryDilation3x3");
+                acc.Add(FnDilation, TimeInPlace(sisBase, b => new BinaryDilation3x3().ApplyInPlace(b), runs), runs);
+
+                prepared = (Bitmap)sisBase.Clone();
+                new BinaryDilation3x3().ApplyInPlace(prepared);
+                Step("BlobCounter");
+                acc.Add(FnBlob, TimeRead(() => {
+                    var bc = new BlobCounter();
+                    bc.ProcessImage(prepared);
+                    starCount = bc.GetObjectsInformation().Length;
+                }, runs), runs);
+
+                // --- Full star detection (superset; excluded from the score total) ---
+                Step("StarDetection");
+                var rendered = imageData.RenderImage();
+                var p = new StarDetectionParams {
+                    Sensitivity = profileService.ActiveProfile.ImageSettings.StarSensitivity,
+                    NoiseReduction = profileService.ActiveProfile.ImageSettings.NoiseReduction
+                };
+                var noProgress = new Progress<ApplicationStatus>();
+                var detectMs = await TimeAsync(async () => {
+                    var r = await starDetection.Detect(rendered, rendered.Image.Format, p, noProgress, token);
+                    return r?.DetectedStars ?? 0;
+                }, runs, v => starCount = v);
+                acc.Add(FnStarDetection, detectMs, runs, includeInTotal: false);
+
+                return starCount;
+            } finally {
+                prepared?.Dispose();
+                sisBase?.Dispose();
+                cannyBase?.Dispose();
+                bmp8small?.Dispose();
+                bmp8full?.Dispose();
+                bmp16?.Dispose();
+            }
+        }
+
+        // ---- timing helpers (1 warmup pass excluded, then mean of `runs`) ----
+
+        private static double TimeNew(Func<Bitmap> produce, int runs) {
+            using (var w = produce()) { }
+            var sw = new Stopwatch();
+            var total = 0d;
+            for (var i = 0; i < runs; i++) {
+                sw.Restart();
+                var r = produce();
+                sw.Stop();
+                total += sw.Elapsed.TotalMilliseconds;
+                r.Dispose();
+            }
+            return total / runs;
+        }
+
+        private static double TimeInPlace(Bitmap baseBmp, Action<Bitmap> apply, int runs) {
+            using (var w = (Bitmap)baseBmp.Clone()) { apply(w); }
+            var sw = new Stopwatch();
+            var total = 0d;
+            for (var i = 0; i < runs; i++) {
+                var c = (Bitmap)baseBmp.Clone();
+                sw.Restart();
+                apply(c);
+                sw.Stop();
+                total += sw.Elapsed.TotalMilliseconds;
+                c.Dispose();
+            }
+            return total / runs;
+        }
+
+        private static double TimeRead(Action act, int runs) {
+            act();
+            var sw = new Stopwatch();
+            var total = 0d;
+            for (var i = 0; i < runs; i++) {
+                sw.Restart();
+                act();
+                sw.Stop();
+                total += sw.Elapsed.TotalMilliseconds;
+            }
+            return total / runs;
+        }
+
+        private static async Task<double> TimeAsync(Func<Task<int>> act, int runs, Action<int> capture) {
+            capture(await act());
+            var sw = new Stopwatch();
+            var total = 0d;
+            for (var i = 0; i < runs; i++) {
+                sw.Restart();
+                capture(await act());
+                sw.Stop();
+                total += sw.Elapsed.TotalMilliseconds;
+            }
+            return total / runs;
+        }
+
+        // ---- input construction helpers ----
+
+        private static ushort[] IdentityMap16() {
+            var map = new ushort[ushort.MaxValue + 1];
+            for (var i = 0; i < map.Length; i++) { map[i] = (ushort)i; }
+            return map;
+        }
+
+        // Accord uses BGR ordering: RGB.R=2, RGB.G=1, RGB.B=0 (see ImageUtility.Debayer).
+        private static int[,] BayerPatternFor(SensorType type) {
+            switch (type) {
+                case SensorType.GRBG: return new int[,] { { RGB.G, RGB.B }, { RGB.R, RGB.G } };
+                case SensorType.GBRG: return new int[,] { { RGB.G, RGB.R }, { RGB.B, RGB.G } };
+                case SensorType.BGGR: return new int[,] { { RGB.R, RGB.G }, { RGB.G, RGB.B } };
+                case SensorType.RGGB:
+                default: return new int[,] { { RGB.B, RGB.G }, { RGB.G, RGB.R } };
+            }
+        }
+
+        /// <summary>Accumulates per-function timings in a stable, canonical order across frames.</summary>
+        private class FunctionAccumulator {
+            private readonly List<FunctionResult> order = new List<FunctionResult>();
+            private readonly Dictionary<string, FunctionResult> map = new Dictionary<string, FunctionResult>();
+
+            public void Add(string name, double ms, int runs, bool includeInTotal = true) {
+                if (!map.TryGetValue(name, out var fr)) {
+                    fr = new FunctionResult { Name = name, Runs = runs, IncludeInTotal = includeInTotal, Ms = 0, Applicable = true };
+                    map[name] = fr;
+                    order.Add(fr);
+                }
+                fr.Ms += ms;   // sum across frames
+            }
+
+            public List<FunctionResult> Build() => order;
         }
     }
 }
