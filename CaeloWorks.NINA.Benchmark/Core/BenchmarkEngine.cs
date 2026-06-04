@@ -52,16 +52,22 @@ namespace CaeloWorks.NINA.Benchmark.Core {
         [ObservableProperty] private string statusText = "Idle";
         [ObservableProperty] private int iterations = 3;
 
-        // Submission settings (persisted to settings.json on change).
-        [ObservableProperty] private string endpointUrl;
-        [ObservableProperty] private string submitToken;
-        [ObservableProperty] private string nickname;
+        // The only user-configurable submission field (persisted to settings.json on change).
         [ObservableProperty] private string machineName;
         [ObservableProperty] private bool isSubmitting;
         [ObservableProperty] private string lastShareUrl;
 
         /// <summary>Convenience for binding button enabled-state without a converter.</summary>
         public bool NotSubmitting => !IsSubmitting;
+
+        /// <summary>Where runs are submitted (compile-time constant), shown read-only in the UI.</summary>
+        public string SubmissionEndpoint => BenchmarkSubmitter.Endpoint;
+
+        /// <summary>The NINA Observer name used to label submissions (read-only here).</summary>
+        public string Observer => profileService?.ActiveProfile?.AstrometrySettings?.Observer ?? "";
+
+        /// <summary>Active profile name, the default machine label when none is set.</summary>
+        public string ActiveProfileName => profileService?.ActiveProfile?.Name ?? "";
 
         public ObservableCollection<BenchmarkResult> History { get; }
 
@@ -103,31 +109,16 @@ namespace CaeloWorks.NINA.Benchmark.Core {
             TestImagesFolder = ResolveTestImagesFolder();
             History = new ObservableCollection<BenchmarkResult>(store.Load());
 
-            // Assign backing fields directly so loading doesn't trigger a save.
-            var s = settingsStore.Load();
-            endpointUrl = s.EndpointUrl;
-            submitToken = s.SubmitToken;
-            nickname = s.Nickname;
-            machineName = s.MachineName;
+            // Assign backing field directly so loading doesn't trigger a save.
+            machineName = settingsStore.Load().MachineName;
 
             _ = RefreshSystemInfoAsync();
         }
 
         partial void OnIsSubmittingChanged(bool value) => OnPropertyChanged(nameof(NotSubmitting));
 
-        partial void OnEndpointUrlChanged(string value) => SaveSettings();
-        partial void OnSubmitTokenChanged(string value) => SaveSettings();
-        partial void OnNicknameChanged(string value) => SaveSettings();
-        partial void OnMachineNameChanged(string value) => SaveSettings();
-
-        private void SaveSettings() {
-            settingsStore.Save(new BenchmarkSettings {
-                EndpointUrl = EndpointUrl ?? "",
-                SubmitToken = SubmitToken ?? "",
-                Nickname = Nickname ?? "",
-                MachineName = MachineName ?? "",
-            });
-        }
+        partial void OnMachineNameChanged(string value) =>
+            settingsStore.Save(new BenchmarkSettings { MachineName = MachineName ?? "" });
 
         [RelayCommand]
         private async Task SubmitAsync(BenchmarkResult result) {
@@ -135,12 +126,14 @@ namespace CaeloWorks.NINA.Benchmark.Core {
             IsSubmitting = true;
             StatusText = "Submitting…";
             try {
-                var url = await submitter.SubmitAsync(result, new BenchmarkSettings {
-                    EndpointUrl = EndpointUrl ?? "",
-                    SubmitToken = SubmitToken ?? "",
-                    Nickname = Nickname ?? "",
-                    MachineName = MachineName ?? "",
-                }, pluginVersion, CancellationToken.None);
+                // Identity comes from N.I.N.A.: the Observer option, and the machine label
+                // (the configured name, or the active profile name as a fallback).
+                var observer = profileService?.ActiveProfile?.AstrometrySettings?.Observer;
+                var machine = string.IsNullOrWhiteSpace(MachineName)
+                    ? profileService?.ActiveProfile?.Name
+                    : MachineName;
+
+                var url = await submitter.SubmitAsync(result, observer, machine, pluginVersion, CancellationToken.None);
 
                 LastShareUrl = url;
                 TryCopyToClipboard(url);

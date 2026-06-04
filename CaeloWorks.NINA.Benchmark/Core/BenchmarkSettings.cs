@@ -15,9 +15,8 @@ namespace CaeloWorks.NINA.Benchmark.Core {
 
     /// <summary>Submission settings for the sharing site (persisted as JSON next to the history).</summary>
     public class BenchmarkSettings {
-        public string EndpointUrl { get; set; } = "";
-        public string SubmitToken { get; set; } = "";
-        public string Nickname { get; set; } = "";
+        // The only user-configurable submission field. Endpoint is compile-time; nickname comes from
+        // the NINA Observer option; if this is empty the active profile name is used as the machine label.
         public string MachineName { get; set; } = "";
     }
 
