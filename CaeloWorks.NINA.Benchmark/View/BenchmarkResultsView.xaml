@@ -13,6 +13,7 @@
         <StreamGeometry x:Key="CaeloIcon_Play">M7 4v16l13 -8l-13 -8</StreamGeometry>
         <StreamGeometry x:Key="CaeloIcon_Trash">M4 7l16 0 M10 11l0 6 M14 11l0 6 M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12 M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3</StreamGeometry>
         <StreamGeometry x:Key="CaeloIcon_Details">M11 15a4 4 0 1 0 8 0a4 4 0 1 0 -8 0 M18.5 18.5l2.5 2.5 M4 6h16 M4 12h4 M4 18h4</StreamGeometry>
+        <StreamGeometry x:Key="CaeloIcon_Cancel">M18 6l-12 12 M6 6l12 12</StreamGeometry>
         <Style x:Key="IconPath" TargetType="Path">
             <Setter Property="Width" Value="15" />
             <Setter Property="Height" Value="15" />
@@ -41,21 +42,26 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Button Padding="12,4" Command="{Binding RunBenchmarkCommand}">
+                    <Button Padding="14,6" Command="{Binding RunBenchmarkCommand}">
                         <StackPanel Orientation="Horizontal">
                             <Path Style="{StaticResource IconPath}" Data="{StaticResource CaeloIcon_Play}" />
-                            <TextBlock Margin="7,0,3,0" VerticalAlignment="Center" Text="Run benchmark" />
+                            <TextBlock Margin="9,0,5,0" VerticalAlignment="Center" Text="Run benchmark" />
                         </StackPanel>
                     </Button>
-                    <Button Margin="6,0,0,0" Padding="12,4" Content="Cancel"
+                    <Button Margin="8,0,0,0" Padding="14,6"
                             Command="{Binding CancelCommand}"
-                            Visibility="{Binding IsRunning, Converter={StaticResource BoolToVis}}" />
-                    <Button Margin="6,0,0,0" Padding="12,4"
+                            Visibility="{Binding IsRunning, Converter={StaticResource BoolToVis}}">
+                        <StackPanel Orientation="Horizontal">
+                            <Path Style="{StaticResource IconPath}" Data="{StaticResource CaeloIcon_Cancel}" />
+                            <TextBlock Margin="9,0,5,0" VerticalAlignment="Center" Text="Cancel" />
+                        </StackPanel>
+                    </Button>
+                    <Button Margin="8,0,0,0" Padding="14,6"
                             Command="{Binding ClearHistoryCommand}"
                             ToolTip="Remove every saved benchmark run from the history">
                         <StackPanel Orientation="Horizontal">
                             <Path Style="{StaticResource IconPath}" Data="{StaticResource CaeloIcon_Trash}" />
-                            <TextBlock Margin="7,0,3,0" VerticalAlignment="Center" Text="Clear all" />
+                            <TextBlock Margin="9,0,5,0" VerticalAlignment="Center" Text="Clear all" />
                         </StackPanel>
                     </Button>
                     <TextBlock Margin="16,0,4,0" VerticalAlignment="Center" Text="Runs/function:" />
@@ -118,23 +124,23 @@
                     <DataGridTemplateColumn Header="" CanUserResize="False">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <Button Margin="2,1" Padding="8,2"
+                                <Button Margin="3,2" Padding="11,4"
                                         Command="{Binding DataContext.ToggleDetailsCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                         CommandParameter="{Binding}">
                                     <StackPanel Orientation="Horizontal">
                                         <Path Style="{StaticResource IconPath}" Width="13" Height="13" Data="{StaticResource CaeloIcon_Details}" />
-                                        <TextBlock Margin="6,0,2,0" VerticalAlignment="Center" Text="Details" />
+                                        <TextBlock Margin="8,0,4,0" VerticalAlignment="Center" Text="Details" />
                                     </StackPanel>
                                 </Button>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
-                    <DataGridTextColumn Header="Date" Binding="{Binding DisplayTimestamp}" />
-                    <DataGridTextColumn Header="Score" Binding="{Binding Score}" />
-                    <DataGridTextColumn Header="Total (ms)" Binding="{Binding TotalMs, StringFormat=N0}" />
-                    <DataGridTextColumn Header="Stars" Binding="{Binding TotalStarsDetected}" />
-                    <DataGridTextColumn Header="Runs" Binding="{Binding Runs}" />
-                    <DataGridTextColumn Header="CPU" Binding="{Binding CpuShort}" Width="*" />
+                    <DataGridTextColumn Header="Date" Binding="{Binding DisplayTimestamp}" Width="150" MinWidth="130" />
+                    <DataGridTextColumn Header="Score" Binding="{Binding Score}" Width="80" MinWidth="60" />
+                    <DataGridTextColumn Header="Total (ms)" Binding="{Binding TotalMs, StringFormat=N0}" Width="100" MinWidth="80" />
+                    <DataGridTextColumn Header="Stars" Binding="{Binding TotalStarsDetected}" Width="70" MinWidth="55" />
+                    <DataGridTextColumn Header="Runs" Binding="{Binding Runs}" Width="65" MinWidth="50" />
+                    <DataGridTextColumn Header="CPU" Binding="{Binding CpuShort}" Width="*" MinWidth="180" />
                 </DataGrid.Columns>
                 <DataGrid.RowDetailsTemplate>
                     <DataTemplate>

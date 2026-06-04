@@ -37,11 +37,11 @@
                 Grid.Row="1"
                 HorizontalAlignment="Left"
                 Margin="0,8,0,0"
-                Padding="10,3"
+                Padding="14,6"
                 Command="{Binding RefreshSystemInfoCommand}">
                 <StackPanel Orientation="Horizontal">
                     <Path Style="{StaticResource IconPath}" Data="{StaticResource CaeloIcon_Refresh}" />
-                    <TextBlock Margin="7,0,3,0" VerticalAlignment="Center" Text="Refresh" />
+                    <TextBlock Margin="9,0,5,0" VerticalAlignment="Center" Text="Refresh" />
                 </StackPanel>
             </Button>
         </Grid>
