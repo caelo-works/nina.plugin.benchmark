@@ -18,8 +18,8 @@ using System.Runtime.InteropServices;
 [assembly: Guid("5ebd0d69-a343-472f-b4b6-487a63249448")]
 
 // [MANDATORY] The plugin version, "Major.Minor.Patch.Build".
-[assembly: AssemblyVersion("0.2.2.0")]
-[assembly: AssemblyFileVersion("0.2.2.0")]
+[assembly: AssemblyVersion("0.2.3.0")]
+[assembly: AssemblyFileVersion("0.2.3.0")]
 
 // [MANDATORY] The minimum N.I.N.A. version this plugin is compatible with.
 [assembly: AssemblyMetadata("MinimumApplicationVersion", "3.0.0.0")]
@@ -56,5 +56,9 @@ Each function is timed (one warm-up pass, then the mean of N runs) and aggregate
 [assembly: AssemblyMetadata("Repository", "https://github.com/CaeloWorks/nina.plugin.benchmark")]
 [assembly: AssemblyMetadata("Homepage", "https://github.com/CaeloWorks/nina.plugin.benchmark")]
 [assembly: AssemblyMetadata("Tags", "benchmark,performance,diagnostics,imaging")]
+
+// Plugin icon shown in the plugin list and detail page (replaces the default puzzle piece).
+// Embedded as a WPF resource and referenced via a pack URI so it works offline / from a private repo.
+[assembly: AssemblyMetadata("FeaturedImageURL", "pack://application:,,,/CaeloWorks.NINA.Benchmark;component/Resources/cpu.png")]
 
 [assembly: ComVisible(false)]

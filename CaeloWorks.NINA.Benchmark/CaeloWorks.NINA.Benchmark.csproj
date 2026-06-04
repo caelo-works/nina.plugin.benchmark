@@ -55,6 +55,11 @@
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3296.44" ExcludeAssets="all" />
   </ItemGroup>
 
+  <!-- Plugin icon shown in N.I.N.A.'s plugin list / detail page (referenced via a pack URI). -->
+  <ItemGroup>
+    <Resource Include="Resources\cpu.png" />
+  </ItemGroup>
+
   <!-- Bundled test frames, copied next to the plugin DLL. -->
   <ItemGroup>
     <Content Include="TestImages\**\*">
