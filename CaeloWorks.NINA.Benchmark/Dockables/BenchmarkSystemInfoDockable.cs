@@ -27,6 +27,7 @@ namespace CaeloWorks.NINA.Benchmark.Dockables {
             Engine = engine;
             Title = "Benchmark — System";
             CanClose = true;
+            ImageGeometry = BenchmarkIcons.Cpu;
         }
 
         public BenchmarkEngine Engine { get; }

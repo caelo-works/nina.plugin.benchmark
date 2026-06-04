@@ -25,9 +25,13 @@ namespace CaeloWorks.NINA.Benchmark.Dockables {
         [ImportingConstructor]
         public BenchmarkResultsDockable(IProfileService profileService, BenchmarkEngine engine) : base(profileService) {
             Engine = engine;
-            Title = "Benchmark — Results";
+            Title = "Benchmark";
             CanClose = true;
+            ImageGeometry = BenchmarkIcons.Cpu;
         }
+
+        /// <summary>Place this dockable in the Imaging "Tools" pane rather than the info/image pane.</summary>
+        public override bool IsTool => true;
 
         public BenchmarkEngine Engine { get; }
     }

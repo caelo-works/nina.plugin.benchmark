@@ -6,6 +6,21 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     d:DesignHeight="220" d:DesignWidth="380">
+    <UserControl.Resources>
+        <!-- Tabler "refresh" (MIT), stroked to match the button text colour. -->
+        <StreamGeometry x:Key="CaeloIcon_Refresh">M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4 M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4</StreamGeometry>
+        <Style x:Key="IconPath" TargetType="Path">
+            <Setter Property="Width" Value="15" />
+            <Setter Property="Height" Value="15" />
+            <Setter Property="Stretch" Value="Uniform" />
+            <Setter Property="StrokeThickness" Value="2" />
+            <Setter Property="StrokeStartLineCap" Value="Round" />
+            <Setter Property="StrokeEndLineCap" Value="Round" />
+            <Setter Property="StrokeLineJoin" Value="Round" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Stroke" Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+        </Style>
+    </UserControl.Resources>
     <!-- DataContext is expected to be a BenchmarkEngine -->
     <GroupBox Header="System information" Margin="5">
         <Grid Margin="5">
@@ -23,8 +38,12 @@
                 HorizontalAlignment="Left"
                 Margin="0,8,0,0"
                 Padding="10,3"
-                Content="Refresh"
-                Command="{Binding RefreshSystemInfoCommand}" />
+                Command="{Binding RefreshSystemInfoCommand}">
+                <StackPanel Orientation="Horizontal">
+                    <Path Style="{StaticResource IconPath}" Data="{StaticResource CaeloIcon_Refresh}" />
+                    <TextBlock Margin="7,0,3,0" VerticalAlignment="Center" Text="Refresh" />
+                </StackPanel>
+            </Button>
         </Grid>
     </GroupBox>
 </UserControl>
