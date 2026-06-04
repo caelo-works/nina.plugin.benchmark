@@ -21,3 +21,8 @@ Thumbs.db
 .DS_Store
 
 ## Test frames are intentionally tracked; large binaries should use Git LFS.
+
+## Test artifacts
+.playwright-mcp/
+*.png
+!CaeloWorks.NINA.Benchmark/Resources/*.png
