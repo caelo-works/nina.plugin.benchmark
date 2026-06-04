@@ -10,6 +10,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 
 namespace CaeloWorks.NINA.Benchmark.Core {
@@ -19,7 +20,11 @@ namespace CaeloWorks.NINA.Benchmark.Core {
         public const int MaxEntries = 25;
 
         private readonly string filePath;
-        private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
+        private static readonly JsonSerializerOptions JsonOptions = new() {
+            WriteIndented = true,
+            // Keep accented text (CPU/GPU/power-plan names) readable instead of \uXXXX-escaped.
+            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+        };
 
         public BenchmarkResultStore() {
             var dir = Path.Combine(

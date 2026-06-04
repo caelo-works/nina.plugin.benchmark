@@ -76,6 +76,21 @@ namespace CaeloWorks.NINA.Benchmark.Core {
         }
 
         private static string GetActivePowerPlan() {
+            // Preferred: WMI returns proper Unicode strings, so accented plan names (e.g. "Équilibré",
+            // "Utilisation normale") come through intact — unlike powercfg's OEM-code-page console output.
+            try {
+                var scope = new ManagementScope(@"\\.\root\cimv2\power");
+                var query = new ObjectQuery("SELECT ElementName FROM Win32_PowerPlan WHERE IsActive = True");
+                using var searcher = new ManagementObjectSearcher(scope, query);
+                foreach (var mo in searcher.Get().Cast<ManagementBaseObject>()) {
+                    var name = mo["ElementName"]?.ToString();
+                    if (!string.IsNullOrWhiteSpace(name)) {
+                        return name.Trim();
+                    }
+                }
+            } catch { /* fall through to powercfg */ }
+
+            // Fallback: powercfg (only reached if the WMI query above failed).
             try {
                 var psi = new ProcessStartInfo("powercfg.exe", "/getactivescheme") {
                     RedirectStandardOutput = true,
