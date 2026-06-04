@@ -21,3 +21,9 @@ TestImages/
 
 Use real light frames with actual stars so star detection (HFR + star count) is meaningful. Keep the
 total size reasonable; if frames are large, enable Git LFS for `*.fits`/`*.xisf` before committing.
+
+## Shipped frames
+| File | Camera | Size | Mode |
+|------|--------|------|------|
+| `OSC-16Mp.fits`  | ToupTek ATR585C (OSC)     | 3840×2160, 16-bit | bayered (RGGB) → debayered |
+| `MONO-16Mp.fits` | ZWO ASI585MM Pro (mono)   | 3840×2160, 16-bit | mono → no debayer |
