@@ -64,6 +64,27 @@ namespace CaeloWorks.NINA.Benchmark.Core {
             }
         }
 
+        /// <summary>Share URL once this run has been submitted (persisted so "View" survives restarts).</summary>
+        private string shareUrl;
+
+        public string ShareUrl {
+            get => shareUrl;
+            set {
+                if (shareUrl != value) {
+                    shareUrl = value;
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ShareUrl)));
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsShared)));
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsNotShared)));
+                }
+            }
+        }
+
+        [JsonIgnore]
+        public bool IsShared => !string.IsNullOrEmpty(ShareUrl);
+
+        [JsonIgnore]
+        public bool IsNotShared => string.IsNullOrEmpty(ShareUrl);
+
         public event PropertyChangedEventHandler PropertyChanged;
     }
 }

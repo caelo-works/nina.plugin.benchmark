@@ -136,6 +136,10 @@ namespace CaeloWorks.NINA.Benchmark.Core {
                 var url = await submitter.SubmitAsync(result, observer, machine, pluginVersion, CancellationToken.None);
 
                 LastShareUrl = url;
+                if (!string.IsNullOrEmpty(url)) {
+                    result.ShareUrl = url;   // flips the row's Share button to "View"
+                    store.Save(History);     // persist so it survives restarts
+                }
                 TryCopyToClipboard(url);
                 StatusText = string.IsNullOrEmpty(url) ? "Submitted." : $"Shared — link copied: {url}";
             } catch (Exception ex) {
@@ -146,10 +150,15 @@ namespace CaeloWorks.NINA.Benchmark.Core {
         }
 
         [RelayCommand]
-        private void OpenShareUrl() {
-            if (string.IsNullOrWhiteSpace(LastShareUrl)) { return; }
+        private void OpenShareUrl() => OpenInBrowser(LastShareUrl);
+
+        [RelayCommand]
+        private void OpenRun(BenchmarkResult result) => OpenInBrowser(result?.ShareUrl);
+
+        private static void OpenInBrowser(string url) {
+            if (string.IsNullOrWhiteSpace(url)) { return; }
             try {
-                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(LastShareUrl) {
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(url) {
                     UseShellExecute = true,
                 });
             } catch { /* ignore */ }
