@@ -13,6 +13,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # Don't pull the LFS test frames: the build only needs the code, and skipping them
+          # avoids burning LFS bandwidth on every CI run. The working tree keeps small pointers.
+          lfs: false
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
@@ -29,7 +33,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: CaeloWorks.NINA.Benchmark
-          path: |
-            CaeloWorks.NINA.Benchmark/bin/Release/net8.0-windows/CaeloWorks.NINA.Benchmark.dll
-            CaeloWorks.NINA.Benchmark/bin/Release/net8.0-windows/TestImages/**
+          # DLL only — the LFS test frames aren't fetched in CI (and would only be pointers here).
+          path: CaeloWorks.NINA.Benchmark/bin/Release/net8.0-windows/CaeloWorks.NINA.Benchmark.dll
           if-no-files-found: error

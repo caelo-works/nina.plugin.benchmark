@@ -23,7 +23,14 @@ Use real light frames with actual stars so star detection (HFR + star count) is 
 total size reasonable; if frames are large, enable Git LFS for `*.fits`/`*.xisf` before committing.
 
 ## Shipped frames
-| File | Camera | Size | Mode |
-|------|--------|------|------|
-| `OSC-16Mp.fits`  | ToupTek ATR585C (OSC)     | 3840×2160, 16-bit | bayered (RGGB) → debayered |
-| `MONO-16Mp.fits` | ZWO ASI585MM Pro (mono)   | 3840×2160, 16-bit | mono → no debayer |
+Tracked via **Git LFS** (see `.gitattributes`). A range of resolutions is included so the
+benchmark exercises the pipeline at different image sizes.
+
+| File | Camera | Dimensions | Mode |
+|------|--------|-----------|------|
+| `osc-16.fits`  | ToupTek ATR585C (OSC)   | 3840×2160 (8 MP)   | bayered (RGGB) → debayered |
+| `mono-16.fits` | ZWO ASI585MM Pro (mono) | 3840×2160 (8 MP)   | mono → no debayer |
+| `mono-32.fits` | ASI camera (mono)       | 4656×3520 (16 MP)  | mono → no debayer |
+| `mono-120.fits`| ASI camera (mono)       | 9576×6388 (61 MP)  | mono → no debayer |
+
+All 16-bit. To work with the repo you need Git LFS installed (`git lfs install`).
