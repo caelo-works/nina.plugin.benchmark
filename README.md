@@ -2,7 +2,7 @@
 
 A plugin for [N.I.N.A.](https://nighttime-imaging.eu/) that benchmarks your machine by timing the
 **genuine N.I.N.A. / Accord image-analysis primitives** that make up the post-capture pipeline, over
-a set of bundled test frames. Each function is invoked exactly the way N.I.N.A. invokes it (same
+a set of test frames. Each function is invoked exactly the way N.I.N.A. invokes it (same
 input pixel formats, same constructor arguments, same chain order):
 
 | Function | Role |
@@ -29,9 +29,11 @@ history, plus *Run benchmark* and *Clear all*) — both on the plugin page (Plug
 
 ## Test frames
 
-The plugin ships test frames in `CaeloWorks.NINA.Benchmark/TestImages/` (copied next to the DLL at
-build time and read at runtime). See that folder's `README.md` for the expected format and the
-OSC/mono layout convention. Run history is persisted as JSON under
+The test frames are **not** bundled with the plugin. On first use you click **Download test set** in
+the *Benchmark results* panel; the frames (~190 MB) are fetched once from the sharing site's
+`/api/testset` manifest into `%localappdata%\NINA\BenchmarkPlugin\TestImages` and cached. Their
+sha256 is re-verified before every run — if a frame is missing or corrupted the plugin shows a
+warning and the download button again. Run history is persisted as JSON under
 `%localappdata%\NINA\BenchmarkPlugin\history.json`.
 
 ## Building

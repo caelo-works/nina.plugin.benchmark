@@ -32,7 +32,6 @@ namespace CaeloWorks.NINA.Benchmark.Core {
     /// N.I.N.A. composes the plugin manifest and the dockables in separate passes.
     /// </summary>
     public partial class BenchmarkEngine : ObservableObject {
-        private static readonly string[] FrameExtensions = { ".fits", ".fit", ".fts", ".xisf" };
         private static readonly string[] BayerHints = { "osc", "color", "colour", "bayer", "rggb" };
 
         private readonly IProfileService profileService;
@@ -42,6 +41,7 @@ namespace CaeloWorks.NINA.Benchmark.Core {
         private readonly SystemInfoProvider systemInfoProvider;
         private readonly BenchmarkSettingsStore settingsStore;
         private readonly BenchmarkSubmitter submitter;
+        private readonly TestSetManager testSet;
         private readonly string pluginVersion;
 
         private CancellationTokenSource cts;
@@ -56,6 +56,34 @@ namespace CaeloWorks.NINA.Benchmark.Core {
         [ObservableProperty] private string machineName;
         [ObservableProperty] private bool isSubmitting;
         [ObservableProperty] private string lastShareUrl;
+
+        // ---- test-set (downloaded frames) state ----
+        [ObservableProperty] private TestSetStatus testSetStatus = TestSetStatus.Missing;
+        [ObservableProperty] private string testSetMessage;
+        [ObservableProperty] private double downloadFraction;
+        [ObservableProperty] private string downloadProgressText;
+        [ObservableProperty] private string downloadSpeedText;
+
+        private const string PromptMissing =
+            "The benchmark test frames aren't on this machine yet. They're downloaded once from the " +
+            "sharing site (~190 MB) and cached for every future run.";
+        private const string PromptCorrupted =
+            "The cached test frames are missing or don't match their checksums. Download them again to " +
+            "run the benchmark.";
+
+        /// <summary>True only when the frames are present and verified — gates the Run button.</summary>
+        public bool IsTestSetReady => TestSetStatus == TestSetStatus.Ready;
+        /// <summary>Show the message + "Download test set" button.</summary>
+        public bool ShowTestSetPrompt => TestSetStatus == TestSetStatus.Missing;
+        /// <summary>Show the download progress bar.</summary>
+        public bool IsDownloadingTestSet => TestSetStatus == TestSetStatus.Downloading;
+
+        partial void OnTestSetStatusChanged(TestSetStatus value) {
+            OnPropertyChanged(nameof(IsTestSetReady));
+            OnPropertyChanged(nameof(ShowTestSetPrompt));
+            OnPropertyChanged(nameof(IsDownloadingTestSet));
+            RunBenchmarkCommand.NotifyCanExecuteChanged();
+        }
 
         /// <summary>Convenience for binding button enabled-state without a converter.</summary>
         public bool NotSubmitting => !IsSubmitting;
@@ -76,8 +104,6 @@ namespace CaeloWorks.NINA.Benchmark.Core {
 
         /// <summary>Highest score across the kept history (0 when empty).</summary>
         public int BestScore => History.Count > 0 ? History.Max(h => h.Score) : 0;
-
-        public string TestImagesFolder { get; }
 
         private static BenchmarkEngine instance;
         private static readonly object gate = new object();
@@ -105,12 +131,16 @@ namespace CaeloWorks.NINA.Benchmark.Core {
             systemInfoProvider = new SystemInfoProvider();
             settingsStore = new BenchmarkSettingsStore();
             submitter = new BenchmarkSubmitter();
+            testSet = new TestSetManager();
             pluginVersion = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "";
-            TestImagesFolder = ResolveTestImagesFolder();
             History = new ObservableCollection<BenchmarkResult>(store.Load());
 
             // Assign backing field directly so loading doesn't trigger a save.
             machineName = settingsStore.Load().MachineName;
+
+            // Offline "looks downloaded" check; full sha256 verification happens at run start.
+            testSetStatus = testSet.IsComplete() ? TestSetStatus.Ready : TestSetStatus.Missing;
+            testSetMessage = PromptMissing;
 
             _ = RefreshSystemInfoAsync();
         }
@@ -176,7 +206,39 @@ namespace CaeloWorks.NINA.Benchmark.Core {
             SystemInfo = await systemInfoProvider.GetAsync();
         }
 
-        private bool CanRun() => !IsRunning;
+        // Running needs the verified frames; clearing history does not.
+        private bool CanRun() => !IsRunning && IsTestSetReady;
+        private bool CanClear() => !IsRunning;
+
+        private void SetTestSetMissing(string message) {
+            TestSetMessage = message;
+            TestSetStatus = TestSetStatus.Missing;
+        }
+
+        [RelayCommand]
+        private async Task DownloadTestSetAsync() {
+            if (IsDownloadingTestSet) { return; }
+            cts = new CancellationTokenSource();
+            TestSetStatus = TestSetStatus.Downloading;
+            DownloadFraction = 0;
+            DownloadProgressText = "Starting…";
+            DownloadSpeedText = "";
+            try {
+                var progress = new Progress<TestSetDownloadProgress>(p => {
+                    DownloadFraction = p.TotalBytes > 0 ? (double)p.DoneBytes / p.TotalBytes : 0;
+                    DownloadProgressText =
+                        $"{HumanBytes(p.DoneBytes)} / {HumanBytes(p.TotalBytes)} · {HumanBytes(Math.Max(0, p.TotalBytes - p.DoneBytes))} left";
+                    DownloadSpeedText = p.BytesPerSecond > 0 ? $"{HumanBytes(p.BytesPerSecond)}/s" : "";
+                });
+                await testSet.DownloadAsync(progress, cts.Token);
+                TestSetStatus = TestSetStatus.Ready;
+                StatusText = "Test set ready.";
+            } catch (OperationCanceledException) {
+                SetTestSetMissing("Download cancelled. Click to try again.");
+            } catch (Exception ex) {
+                SetTestSetMissing("Download failed: " + ex.Message);
+            }
+        }
 
         [RelayCommand(CanExecute = nameof(CanRun))]
         private async Task RunBenchmarkAsync() {
@@ -187,6 +249,18 @@ namespace CaeloWorks.NINA.Benchmark.Core {
             ProgressValue = 0;
             StatusText = "Preparing…";
             try {
+                // Re-verify the cached frames (sha256) before every run; a corrupted or stale set
+                // is rejected here and the user is sent back to the download prompt.
+                StatusText = "Verifying test set…";
+                var verifyProgress = new Progress<double>(p => ProgressValue = p);
+                var verified = await Task.Run(() => testSet.VerifyAsync(verifyProgress, cts.Token), cts.Token);
+                ProgressValue = 0;
+                if (!verified) {
+                    SetTestSetMissing(PromptCorrupted);
+                    StatusText = "Test set missing or corrupted — download it again.";
+                    return;
+                }
+
                 var frames = DiscoverFrames();
                 // Refresh the system snapshot at the start of the run so it reflects the machine state
                 // (power plan, free RAM, clocks) at benchmark time and is stored with the result.
@@ -233,7 +307,7 @@ namespace CaeloWorks.NINA.Benchmark.Core {
             }
         }
 
-        [RelayCommand(CanExecute = nameof(CanRun))]
+        [RelayCommand(CanExecute = nameof(CanClear))]
         private void ClearHistory() {
             History.Clear();
             store.Save(History);
@@ -243,12 +317,7 @@ namespace CaeloWorks.NINA.Benchmark.Core {
         }
 
         private IReadOnlyList<TestFrame> DiscoverFrames() {
-            if (string.IsNullOrEmpty(TestImagesFolder) || !Directory.Exists(TestImagesFolder)) {
-                return Array.Empty<TestFrame>();
-            }
-            return Directory.EnumerateFiles(TestImagesFolder, "*.*", SearchOption.AllDirectories)
-                .Where(f => FrameExtensions.Contains(Path.GetExtension(f).ToLowerInvariant()))
-                .OrderBy(f => f)
+            return testSet.LocalFrames()
                 .Select(f => {
                     var lower = f.ToLowerInvariant();
                     return new TestFrame {
@@ -261,9 +330,22 @@ namespace CaeloWorks.NINA.Benchmark.Core {
                 .ToList();
         }
 
-        private static string ResolveTestImagesFolder() {
-            var asmDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            return asmDir == null ? null : Path.Combine(asmDir, "TestImages");
+        /// <summary>Compact human-readable size/throughput, e.g. "190 MB" or "12.4 MB/s" (without the /s).</summary>
+        private static string HumanBytes(double bytes) {
+            string[] units = { "B", "KB", "MB", "GB", "TB" };
+            var u = 0;
+            while (bytes >= 1024 && u < units.Length - 1) { bytes /= 1024; u++; }
+            return u == 0 ? $"{bytes:0} {units[u]}" : $"{bytes:0.#} {units[u]}";
         }
+    }
+
+    /// <summary>State of the locally-cached benchmark frames.</summary>
+    public enum TestSetStatus {
+        /// <summary>Not present (or rejected at verification) — show the download prompt.</summary>
+        Missing,
+        /// <summary>Currently downloading from the sharing site.</summary>
+        Downloading,
+        /// <summary>Present and ready to benchmark.</summary>
+        Ready
     }
 }

@@ -85,7 +85,7 @@ namespace CaeloWorks.NINA.Benchmark.Core {
             IProgress<BenchmarkProgress> progress, CancellationToken token) {
 
             if (frames == null || frames.Count == 0) {
-                throw new InvalidOperationException("No test frames found. Add FITS/XISF frames to the plugin's TestImages folder.");
+                throw new InvalidOperationException("No test frames found. Download the test set first.");
             }
             if (runs < 1) { runs = 1; }
 

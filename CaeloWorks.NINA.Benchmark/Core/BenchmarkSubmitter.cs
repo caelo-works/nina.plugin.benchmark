@@ -24,8 +24,8 @@ namespace CaeloWorks.NINA.Benchmark.Core {
     /// server's payload schema. Returns the shareable URL.
     /// </summary>
     public class BenchmarkSubmitter {
-        // [DEPLOY] Test site for now; replace with the production URL and recompile.
-        public const string Endpoint = "http://localhost:3000/api/runs";
+        /// <summary>Submission endpoint (compile-time constant, see <see cref="BenchmarkEndpoints"/>).</summary>
+        public const string Endpoint = BenchmarkEndpoints.Runs;
 
         private static readonly HttpClient Http = new HttpClient { Timeout = TimeSpan.FromSeconds(30) };
         private static readonly JsonSerializerOptions SerializeOptions = new() {

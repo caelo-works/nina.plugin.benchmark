@@ -60,13 +60,11 @@
     <Resource Include="Resources\cpu.png" />
   </ItemGroup>
 
-  <!-- Bundled test frames, copied next to the plugin DLL. -->
-  <ItemGroup>
-    <Content Include="TestImages\**\*">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Link>TestImages\%(RecursiveDir)%(Filename)%(Extension)</Link>
-    </Content>
-  </ItemGroup>
+  <!--
+    Test frames are NOT bundled with the plugin anymore. They are downloaded once from the
+    sharing site into %localappdata%\NINA\BenchmarkPlugin\TestImages (see TestSetManager) and
+    re-verified (sha256) before every run.
+  -->
 
   <!--
     Optional convenience deploy to the local N.I.N.A. plugin folder. Enable with:

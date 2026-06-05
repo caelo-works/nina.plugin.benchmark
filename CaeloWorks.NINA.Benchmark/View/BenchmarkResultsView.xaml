@@ -16,6 +16,7 @@
         <StreamGeometry x:Key="CaeloIcon_Cancel">M18 6l-12 12 M6 6l12 12</StreamGeometry>
         <StreamGeometry x:Key="CaeloIcon_Share">M6 12m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0 M18 6m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0 M18 18m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0 M8.7 10.7l6.6 -3.4 M8.7 13.3l6.6 3.4</StreamGeometry>
         <StreamGeometry x:Key="CaeloIcon_World">M3 12a9 9 0 1 0 18 0a9 9 0 1 0 -18 0 M3.6 9h16.8 M3.6 15h16.8 M11.5 3a17 17 0 0 0 0 18 M12.5 3a17 17 0 0 1 0 18</StreamGeometry>
+        <StreamGeometry x:Key="CaeloIcon_Download">M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2 M7 11l5 5l5 -5 M12 4v12</StreamGeometry>
         <Style x:Key="IconPath" TargetType="Path">
             <Setter Property="Width" Value="15" />
             <Setter Property="Height" Value="15" />
@@ -29,7 +30,10 @@
         </Style>
     </UserControl.Resources>
     <GroupBox Header="Benchmark results" Margin="5">
-        <Grid Margin="5">
+        <Grid>
+
+        <!-- Test frames are downloaded separately; show the normal UI only once they're ready. -->
+        <Grid Margin="5" Visibility="{Binding IsTestSetReady, Converter={StaticResource BoolToVis}}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
@@ -215,6 +219,44 @@
                     </DataTemplate>
                 </DataGrid.RowDetailsTemplate>
             </DataGrid>
+        </Grid>
+
+        <!-- Test set not present: short message + download button. -->
+        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" MaxWidth="430" Margin="24"
+                    Visibility="{Binding ShowTestSetPrompt, Converter={StaticResource BoolToVis}}">
+            <Path Style="{StaticResource IconPath}" Width="34" Height="34" HorizontalAlignment="Center"
+                  Opacity="0.7" Data="{StaticResource CaeloIcon_Download}" />
+            <TextBlock Margin="0,14,0,0" TextWrapping="Wrap" TextAlignment="Center" Opacity="0.85"
+                       Text="{Binding TestSetMessage}" />
+            <Button HorizontalAlignment="Center" Margin="0,16,0,0" HorizontalContentAlignment="Left"
+                    Padding="16,6,16,6" Command="{Binding DownloadTestSetCommand}">
+                <StackPanel Orientation="Horizontal" Margin="10,3">
+                    <Path Style="{StaticResource IconPath}" Data="{StaticResource CaeloIcon_Download}" />
+                    <TextBlock Margin="7,0,0,0" VerticalAlignment="Center" Text="Download test set" />
+                </StackPanel>
+            </Button>
+        </StackPanel>
+
+        <!-- Test set downloading: progress bar with remaining size and throughput. -->
+        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" MaxWidth="470" Margin="24"
+                    Visibility="{Binding IsDownloadingTestSet, Converter={StaticResource BoolToVis}}">
+            <TextBlock HorizontalAlignment="Center" FontWeight="Bold" Text="Downloading test set…" />
+            <ProgressBar Height="16" Minimum="0" Maximum="1" Margin="0,12,0,6" Value="{Binding DownloadFraction}" />
+            <Grid>
+                <TextBlock HorizontalAlignment="Left" Opacity="0.85" FontFamily="Consolas,Courier New"
+                           Text="{Binding DownloadProgressText}" />
+                <TextBlock HorizontalAlignment="Right" Opacity="0.85" FontFamily="Consolas,Courier New"
+                           Text="{Binding DownloadSpeedText}" />
+            </Grid>
+            <Button HorizontalAlignment="Center" Margin="0,14,0,0" HorizontalContentAlignment="Left"
+                    Padding="14,4,14,4" Command="{Binding CancelCommand}">
+                <StackPanel Orientation="Horizontal" Margin="10,3">
+                    <Path Style="{StaticResource IconPath}" Data="{StaticResource CaeloIcon_Cancel}" />
+                    <TextBlock Margin="7,0,0,0" VerticalAlignment="Center" Text="Cancel" />
+                </StackPanel>
+            </Button>
+        </StackPanel>
+
         </Grid>
     </GroupBox>
 </UserControl>

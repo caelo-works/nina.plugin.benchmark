@@ -18,8 +18,8 @@ using System.Runtime.InteropServices;
 [assembly: Guid("5ebd0d69-a343-472f-b4b6-487a63249448")]
 
 // [MANDATORY] The plugin version, "Major.Minor.Patch.Build".
-[assembly: AssemblyVersion("0.4.4.0")]
-[assembly: AssemblyFileVersion("0.4.4.0")]
+[assembly: AssemblyVersion("0.5.0.0")]
+[assembly: AssemblyFileVersion("0.5.0.0")]
 
 // [MANDATORY] The minimum N.I.N.A. version this plugin is compatible with.
 [assembly: AssemblyMetadata("MinimumApplicationVersion", "3.0.0.0")]
@@ -30,10 +30,10 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyCopyright("Copyright © 2026 CaeloWorks")]
 
 // [MANDATORY] A short one-line summary shown in the plugin list.
-[assembly: AssemblyMetadata("ShortDescription", "Benchmarks your machine by timing N.I.N.A.'s real image-analysis primitives (debayer, stretch remap, resize, blur, Canny, SIS threshold, dilation, blob counter, star detection) over bundled test frames.")]
+[assembly: AssemblyMetadata("ShortDescription", "Benchmarks your machine by timing N.I.N.A.'s real image-analysis primitives (debayer, stretch remap, resize, blur, Canny, SIS threshold, dilation, blob counter, star detection) over a set of test frames it downloads once.")]
 
 // [OPTIONAL] A longer description (markdown supported by N.I.N.A.).
-[assembly: AssemblyMetadata("LongDescription", @"This plugin measures how fast your machine runs the genuine N.I.N.A. / Accord image-analysis routines that make up the post-capture pipeline. Each function is invoked exactly the way N.I.N.A. invokes it (same input pixel formats, same constructor arguments, same chain order) over the bundled test frames.
+[assembly: AssemblyMetadata("LongDescription", @"This plugin measures how fast your machine runs the genuine N.I.N.A. / Accord image-analysis routines that make up the post-capture pipeline. Each function is invoked exactly the way N.I.N.A. invokes it (same input pixel formats, same constructor arguments, same chain order) over a small set of test frames. The frames are not bundled with the plugin: they are downloaded once from the sharing site (~190 MB), cached locally, and re-verified (sha256) before every run.
 
 Measured per frame:
 - BayerFilter16bpp — debayering (OSC frames),

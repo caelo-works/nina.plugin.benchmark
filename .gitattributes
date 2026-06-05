@@ -1,8 +1,2 @@
 # Normalize line endings; let Git handle conversion automatically.
 * text=auto
-
-# Bundled test frames are large binaries — store them via Git LFS.
-*.fits filter=lfs diff=lfs merge=lfs -text
-*.fit  filter=lfs diff=lfs merge=lfs -text
-*.fts  filter=lfs diff=lfs merge=lfs -text
-*.xisf filter=lfs diff=lfs merge=lfs -text
