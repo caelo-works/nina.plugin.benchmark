@@ -53,7 +53,13 @@ namespace CaeloWorks.NINA.Benchmark.Core {
         private static readonly string[] FrameExtensions = { ".fits", ".fit", ".fts", ".xisf" };
 
         // Long-lived client: large downloads, so no overall timeout (cancellation drives stop).
-        private static readonly HttpClient Http = new HttpClient { Timeout = Timeout.InfiniteTimeSpan };
+        private static readonly HttpClient Http = CreateClient();
+
+        private static HttpClient CreateClient() {
+            var http = new HttpClient { Timeout = Timeout.InfiniteTimeSpan };
+            http.DefaultRequestHeaders.UserAgent.ParseAdd(BenchmarkEndpoints.UserAgent);
+            return http;
+        }
         private static readonly JsonSerializerOptions JsonRead = new() { PropertyNameCaseInsensitive = true };
         private static readonly JsonSerializerOptions JsonWrite = new() { WriteIndented = true };
 

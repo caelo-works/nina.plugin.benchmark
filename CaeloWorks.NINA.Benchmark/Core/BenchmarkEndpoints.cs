@@ -15,8 +15,11 @@ namespace CaeloWorks.NINA.Benchmark.Core {
     /// is deployed.
     /// </summary>
     public static class BenchmarkEndpoints {
-        // [DEPLOY] Homelab CT (LAN). Swap for the public domain once the reverse proxy is up.
-        public const string BaseUrl = "http://10.0.1.189:3000";
+        // [DEPLOY] Production domain (behind Cloudflare → reverse proxy → homelab CT).
+        public const string BaseUrl = "https://nina-benchmark-plugin.com";
+
+        /// <summary>User-Agent sent on every request (a clear product token avoids bot-UA filtering).</summary>
+        public const string UserAgent = "CaeloWorks-NINA-Benchmark";
 
         /// <summary>Submission endpoint (POST a run).</summary>
         public const string Runs = BaseUrl + "/api/runs";

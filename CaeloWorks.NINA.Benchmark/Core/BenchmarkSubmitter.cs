@@ -29,7 +29,13 @@ namespace CaeloWorks.NINA.Benchmark.Core {
         /// <summary>Submission endpoint (compile-time constant, see <see cref="BenchmarkEndpoints"/>).</summary>
         public const string Endpoint = BenchmarkEndpoints.Runs;
 
-        private static readonly HttpClient Http = new HttpClient { Timeout = TimeSpan.FromSeconds(30) };
+        private static readonly HttpClient Http = CreateClient();
+
+        private static HttpClient CreateClient() {
+            var http = new HttpClient { Timeout = TimeSpan.FromSeconds(30) };
+            http.DefaultRequestHeaders.UserAgent.ParseAdd(BenchmarkEndpoints.UserAgent);
+            return http;
+        }
         private static readonly JsonSerializerOptions SerializeOptions = new() {
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
         };
