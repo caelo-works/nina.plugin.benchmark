@@ -24,6 +24,8 @@ namespace CaeloWorks.NINA.Benchmark.Core {
     /// server's payload schema. Returns the shareable URL.
     /// </summary>
     public class BenchmarkSubmitter {
+        private const int Schema = 1;
+
         /// <summary>Submission endpoint (compile-time constant, see <see cref="BenchmarkEndpoints"/>).</summary>
         public const string Endpoint = BenchmarkEndpoints.Runs;
 
@@ -36,9 +38,20 @@ namespace CaeloWorks.NINA.Benchmark.Core {
         public async Task<string> SubmitAsync(BenchmarkResult result, string nickname, string machineName,
             string pluginVersion, CancellationToken ct) {
 
+            // Fetch a single-use nonce, then sign the run so the server can tell it came from a
+            // genuine plugin build and hasn't been tampered with or replayed.
+            var nonce = await GetNonceAsync(ct);
+            var canonical = BenchmarkSigning.Canonical(
+                Schema, pluginVersion, result.TestSetVersion ?? "", nonce,
+                result.Score, result.TotalMs, result.ImageCount, result.Runs,
+                result.TotalStarsDetected, result.Functions);
+            var signature = BenchmarkSigning.Sign(canonical);
+
             var payload = new {
-                schema = 1,
+                schema = Schema,
                 pluginVersion,
+                nonce,
+                signature,
                 nickname = Clean(nickname, 40),
                 machineName = Clean(machineName, 60),
                 result,
@@ -59,6 +72,17 @@ namespace CaeloWorks.NINA.Benchmark.Core {
             return parsed?.Url ?? string.Empty;
         }
 
+        private async Task<string> GetNonceAsync(CancellationToken ct) {
+            using var resp = await Http.GetAsync(BenchmarkEndpoints.Challenge, ct);
+            var body = await resp.Content.ReadAsStringAsync();
+            if (!resp.IsSuccessStatusCode) {
+                throw new Exception($"Could not get a submission nonce ({(int)resp.StatusCode}). {Truncate(body, 160)}");
+            }
+            var parsed = JsonSerializer.Deserialize<NonceResponse>(body, ReadOptions);
+            if (string.IsNullOrEmpty(parsed?.Nonce)) { throw new Exception("Server returned no nonce."); }
+            return parsed.Nonce;
+        }
+
         private static string Clean(string s, int max) {
             if (string.IsNullOrWhiteSpace(s)) { return null; }
             s = s.Trim();
@@ -71,6 +95,11 @@ namespace CaeloWorks.NINA.Benchmark.Core {
         private class SubmitResponse {
             public string Id { get; set; }
             public string Url { get; set; }
+        }
+
+        private class NonceResponse {
+            public string Nonce { get; set; }
+            public int TtlSeconds { get; set; }
         }
     }
 }

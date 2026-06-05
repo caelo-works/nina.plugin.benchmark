@@ -78,6 +78,9 @@ namespace CaeloWorks.NINA.Benchmark.Core {
                 .ToList();
         }
 
+        /// <summary>Version id of the currently cached set (from the stored manifest), or "" if none.</summary>
+        public string Version => StoredManifest()?.Version ?? "";
+
         /// <summary>Total size of the cached set, for a stored-manifest-free "looks downloaded" hint.</summary>
         public TestSetManifest StoredManifest() {
             try {

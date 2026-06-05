@@ -277,6 +277,7 @@ namespace CaeloWorks.NINA.Benchmark.Core {
                 var result = await Task.Run(() => runner.RunAsync(frames, Iterations, progress, token), token);
 
                 result.System = SystemInfo;
+                result.TestSetVersion = testSet.Version;
                 History.Insert(0, result);
                 while (History.Count > BenchmarkResultStore.MaxEntries) {
                     History.RemoveAt(History.Count - 1);

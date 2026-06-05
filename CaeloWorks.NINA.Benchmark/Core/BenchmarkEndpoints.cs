@@ -21,6 +21,9 @@ namespace CaeloWorks.NINA.Benchmark.Core {
         /// <summary>Submission endpoint (POST a run).</summary>
         public const string Runs = BaseUrl + "/api/runs";
 
+        /// <summary>Single-use nonce for signing a submission (GET).</summary>
+        public const string Challenge = BaseUrl + "/api/challenge";
+
         /// <summary>Test-set manifest (GET name/size/sha256/url for every benchmark frame).</summary>
         public const string TestSet = BaseUrl + "/api/testset";
     }

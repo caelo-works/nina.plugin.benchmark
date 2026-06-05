@@ -45,6 +45,9 @@ namespace CaeloWorks.NINA.Benchmark.Core {
         public int Score { get; set; }
         public int TotalStarsDetected { get; set; }
 
+        /// <summary>Version id of the test-set the run used (from the manifest), for server-side verification.</summary>
+        public string TestSetVersion { get; set; } = "";
+
         public SystemInfo System { get; set; }
 
         public string DisplayTimestamp => TimestampUtc.ToLocalTime().ToString("yyyy-MM-dd HH:mm");
