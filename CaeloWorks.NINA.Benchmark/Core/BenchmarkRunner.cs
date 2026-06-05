@@ -115,7 +115,8 @@ namespace CaeloWorks.NINA.Benchmark.Core {
                 Functions = functions,
                 TotalMs = total,
                 TotalStarsDetected = lastStars,
-                Score = total > 0 ? (int)Math.Round(100000.0 / total) : 0
+                // One decimal of precision so close machines don't tie on a whole number.
+                Score = total > 0 ? Math.Round(100000.0 / total, 1, MidpointRounding.AwayFromZero) : 0
             };
         }
 

@@ -74,7 +74,7 @@
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="12,0,0,0">
                     <TextBlock VerticalAlignment="Center" Text="Best score:" />
                     <TextBlock Margin="6,0,0,0" VerticalAlignment="Center" FontWeight="Bold" FontSize="16"
-                               Text="{Binding BestScore}" />
+                               Text="{Binding BestScore, StringFormat={}{0:0.0}}" />
                 </StackPanel>
             </Grid>
 
@@ -89,7 +89,7 @@
             </Grid>
 
             <!-- Latest run: per-function breakdown -->
-            <GroupBox Grid.Row="2" Margin="0,0,0,8" Header="Latest run — per function"
+            <GroupBox Grid.Row="2" Margin="0,0,0,8" Header="Latest run (per function)"
                       Visibility="{Binding LatestResult, Converter={StaticResource BoolToVis}, FallbackValue=Collapsed}">
                 <StackPanel>
                     <ItemsControl ItemsSource="{Binding LatestResult.Functions}">
@@ -173,7 +173,7 @@
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
                     <DataGridTextColumn Header="Date" Binding="{Binding DisplayTimestamp}" Width="150" MinWidth="130" />
-                    <DataGridTextColumn Header="Score" Binding="{Binding Score}" Width="80" MinWidth="60" />
+                    <DataGridTextColumn Header="Score" Binding="{Binding Score, StringFormat={}{0:0.0}}" Width="80" MinWidth="60" />
                     <DataGridTextColumn Header="Total (ms)" Binding="{Binding TotalMs, StringFormat=N0}" Width="100" MinWidth="80" />
                     <DataGridTextColumn Header="Power plan" Binding="{Binding System.PowerPlan}" Width="*" MinWidth="150" />
                     <DataGridTextColumn Header="NINA" Binding="{Binding System.HostVersion}" Width="120" MinWidth="90" />

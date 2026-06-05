@@ -29,7 +29,7 @@ namespace CaeloWorks.NINA.Benchmark.Dockables {
         public BenchmarkSystemInfoDockable(IProfileService profileService, IImageDataFactory imageDataFactory,
             IPluggableBehaviorSelector<IStarDetection> starDetectionSelector) : base(profileService) {
             Engine = BenchmarkEngine.GetInstance(profileService, imageDataFactory, starDetectionSelector);
-            Title = "Benchmark — System";
+            Title = "Benchmark System";
             CanClose = true;
             ImageGeometry = BenchmarkIcons.Cpu;
         }

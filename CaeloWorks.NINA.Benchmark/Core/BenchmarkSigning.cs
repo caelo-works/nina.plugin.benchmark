@@ -43,14 +43,14 @@ namespace CaeloWorks.NINA.Benchmark.Core {
         }
 
         public static string Canonical(int schema, string pluginVersion, string testSetVersion, string nonce,
-            int score, double totalMs, int imageCount, int runs, int totalStars, IEnumerable<FunctionResult> functions) {
+            double score, double totalMs, int imageCount, int runs, int totalStars, IEnumerable<FunctionResult> functions) {
             var parts = new[] {
                 "v1",
                 Inv(schema),
                 pluginVersion ?? "",
                 testSetVersion ?? "",
                 nonce ?? "",
-                Inv(score),
+                ScoreKey(score),
                 IntMs(totalMs),
                 Inv(imageCount),
                 Inv(runs),
@@ -67,10 +67,14 @@ namespace CaeloWorks.NINA.Benchmark.Core {
             return ToHexLower(sha.ComputeHash(Encoding.UTF8.GetBytes(joined)));
         }
 
-        // round(x*100) as an integer — avoids any float-formatting mismatch across .NET / JS.
+        // round(x*100) as an integer, avoiding any float-formatting mismatch across .NET / JS.
         // AwayFromZero on .5 ties matches JavaScript's Math.round for the (non-negative) ms here.
         private static string IntMs(double x) =>
             ((long)Math.Round(x * 100.0, MidpointRounding.AwayFromZero)).ToString(CultureInfo.InvariantCulture);
+
+        // Score carries one decimal, so bind it as integer tenths (same rounding rule as IntMs).
+        private static string ScoreKey(double score) =>
+            ((long)Math.Round(score * 10.0, MidpointRounding.AwayFromZero)).ToString(CultureInfo.InvariantCulture);
 
         private static string Inv(int v) => v.ToString(CultureInfo.InvariantCulture);
 

@@ -103,7 +103,7 @@ namespace CaeloWorks.NINA.Benchmark.Core {
         public BenchmarkResult LatestResult => History.Count > 0 ? History[0] : null;
 
         /// <summary>Highest score across the kept history (0 when empty).</summary>
-        public int BestScore => History.Count > 0 ? History.Max(h => h.Score) : 0;
+        public double BestScore => History.Count > 0 ? History.Max(h => h.Score) : 0;
 
         private static BenchmarkEngine instance;
         private static readonly object gate = new object();
@@ -171,7 +171,7 @@ namespace CaeloWorks.NINA.Benchmark.Core {
                     store.Save(History);     // persist so it survives restarts
                 }
                 TryCopyToClipboard(url);
-                StatusText = string.IsNullOrEmpty(url) ? "Submitted." : $"Shared — link copied: {url}";
+                StatusText = string.IsNullOrEmpty(url) ? "Submitted." : $"Shared. Link copied: {url}";
             } catch (Exception ex) {
                 StatusText = "Submit failed: " + ex.Message;
             } finally {
@@ -257,7 +257,7 @@ namespace CaeloWorks.NINA.Benchmark.Core {
                 ProgressValue = 0;
                 if (!verified) {
                     SetTestSetMissing(PromptCorrupted);
-                    StatusText = "Test set missing or corrupted — download it again.";
+                    StatusText = "Test set missing or corrupted. Download it again.";
                     return;
                 }
 
@@ -285,7 +285,7 @@ namespace CaeloWorks.NINA.Benchmark.Core {
                 OnPropertyChanged(nameof(LatestResult));
                 OnPropertyChanged(nameof(BestScore));
                 store.Save(History);
-                StatusText = $"Done — score {result.Score} ({result.TotalMs:0} ms total)";
+                StatusText = $"Done. Score {result.Score:0.0} ({result.TotalMs:0} ms total)";
             } catch (OperationCanceledException) {
                 StatusText = "Cancelled";
             } catch (Exception ex) {

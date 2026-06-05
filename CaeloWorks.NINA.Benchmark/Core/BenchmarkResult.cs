@@ -27,7 +27,7 @@ namespace CaeloWorks.NINA.Benchmark.Core {
         public string Display => Applicable ? $"{Ms:N2} ms" : "n/a";
 
         /// <summary>Note shown next to functions that are measured but not summed into the score.</summary>
-        public string Note => IncludeInTotal ? string.Empty : "(not in total — superset)";
+        public string Note => IncludeInTotal ? string.Empty : "(not in total, superset)";
     }
 
     /// <summary>
@@ -42,7 +42,7 @@ namespace CaeloWorks.NINA.Benchmark.Core {
         public List<FunctionResult> Functions { get; set; } = new List<FunctionResult>();
 
         public double TotalMs { get; set; }
-        public int Score { get; set; }
+        public double Score { get; set; }
         public int TotalStarsDetected { get; set; }
 
         /// <summary>Version id of the test-set the run used (from the manifest), for server-side verification.</summary>

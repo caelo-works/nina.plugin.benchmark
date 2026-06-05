@@ -15,7 +15,7 @@
                 <StackPanel Margin="10,10,10,0">
                     <TextBlock FontWeight="Bold" FontSize="14" Text="N.I.N.A. Benchmark" />
                     <TextBlock Margin="0,3,0,6" TextWrapping="Wrap" Foreground="#90A0B8"
-                               Text="Times N.I.N.A.'s real image-analysis pipeline — debayer, stretch, star detection and friends — over a downloadable test set, and scores your machine so you can compare it with others and share the result online." />
+                               Text="Times N.I.N.A.'s real image-analysis pipeline (debayer, stretch, star detection and friends) over a downloadable test set, and scores your machine so you can compare it with others and share the result online." />
                 </StackPanel>
                 <view:SystemInfoView />
                 <view:BenchmarkResultsView MinHeight="320" />

@@ -197,7 +197,7 @@ namespace CaeloWorks.NINA.Benchmark.Core {
                     if (!HexEquals(hash, f.Sha256)) {
                         TryDelete(partPath);
                         throw new InvalidOperationException(
-                            $"Checksum mismatch on {f.Name}. The download may be corrupted — please retry.");
+                            $"Checksum mismatch on {f.Name}. The download may be corrupted. Please retry.");
                     }
                 }
 
