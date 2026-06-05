@@ -15,8 +15,8 @@ namespace CaeloWorks.NINA.Benchmark.Core {
     /// is deployed.
     /// </summary>
     public static class BenchmarkEndpoints {
-        // [DEPLOY] Test site for now; replace with the production URL and recompile.
-        public const string BaseUrl = "http://localhost:3000";
+        // [DEPLOY] Homelab CT (LAN). Swap for the public domain once the reverse proxy is up.
+        public const string BaseUrl = "http://10.0.1.189:3000";
 
         /// <summary>Submission endpoint (POST a run).</summary>
         public const string Runs = BaseUrl + "/api/runs";
