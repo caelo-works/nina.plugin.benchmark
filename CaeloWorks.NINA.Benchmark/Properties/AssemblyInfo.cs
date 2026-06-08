@@ -18,11 +18,13 @@ using System.Runtime.InteropServices;
 [assembly: Guid("5ebd0d69-a343-472f-b4b6-487a63249448")]
 
 // [MANDATORY] The plugin version, "Major.Minor.Patch.Build".
-[assembly: AssemblyVersion("0.6.2.0")]
-[assembly: AssemblyFileVersion("0.6.2.0")]
+[assembly: AssemblyVersion("0.6.3.0")]
+[assembly: AssemblyFileVersion("0.6.3.0")]
 
-// [MANDATORY] The minimum N.I.N.A. version this plugin is compatible with.
-[assembly: AssemblyMetadata("MinimumApplicationVersion", "3.0.0.0")]
+// [MANDATORY] The minimum N.I.N.A. version this plugin is compatible with. We build against the
+// 3.2 SDK and use 3.2-era injection APIs (IImageDataFactory, IPluggableBehaviorSelector), so 3.2 is
+// the safe floor rather than 3.0.
+[assembly: AssemblyMetadata("MinimumApplicationVersion", "3.2.0.0")]
 
 // [MANDATORY] Author / company.
 [assembly: AssemblyCompany("CaeloWorks")]
@@ -54,11 +56,13 @@ Each function is timed (one warm-up pass, then the mean of N runs) and aggregate
 [assembly: AssemblyMetadata("License", "MPL-2.0")]
 [assembly: AssemblyMetadata("LicenseURL", "https://www.mozilla.org/en-US/MPL/2.0/")]
 [assembly: AssemblyMetadata("Repository", "https://github.com/CaeloWorks/nina.plugin.benchmark")]
-[assembly: AssemblyMetadata("Homepage", "https://github.com/CaeloWorks/nina.plugin.benchmark")]
+[assembly: AssemblyMetadata("Homepage", "https://nina-benchmark-plugin.com")]
+[assembly: AssemblyMetadata("ChangelogURL", "https://github.com/CaeloWorks/nina.plugin.benchmark/releases")]
 [assembly: AssemblyMetadata("Tags", "benchmark,performance,diagnostics,imaging")]
 
 // Plugin icon shown in the plugin list and detail page (replaces the default puzzle piece).
-// Embedded as a WPF resource and referenced via a pack URI so it works offline / from a private repo.
-[assembly: AssemblyMetadata("FeaturedImageURL", "pack://application:,,,/CaeloWorks.NINA.Benchmark;component/Resources/cpu.png")]
+// An https URL (not a pack:// URI) so N.I.N.A.'s plugin manager can render it for the plugin in the
+// online "available" list before it is installed.
+[assembly: AssemblyMetadata("FeaturedImageURL", "https://nina-benchmark-plugin.com/cpu.png")]
 
 [assembly: ComVisible(false)]
