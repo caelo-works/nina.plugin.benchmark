@@ -14,8 +14,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          # Don't pull the LFS test frames: the build only needs the code, and skipping them
-          # avoids burning LFS bandwidth on every CI run. The working tree keeps small pointers.
+          # No LFS content in the repo (the test frames are downloaded by the plugin at runtime).
           lfs: false
 
       - name: Setup .NET
@@ -33,6 +32,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: CaeloWorks.NINA.Benchmark
-          # DLL only — the LFS test frames aren't fetched in CI (and would only be pointers here).
+          # The plugin is a single self-contained DLL (host assemblies aren't copied).
           path: CaeloWorks.NINA.Benchmark/bin/Release/net8.0-windows/CaeloWorks.NINA.Benchmark.dll
           if-no-files-found: error

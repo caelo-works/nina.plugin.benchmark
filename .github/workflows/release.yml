@@ -1,0 +1,61 @@
+name: Release plugin
+
+# Push a tag like v0.6.3.0 to build the plugin and publish a GitHub Release whose
+# assets (the DLL + a zip + SHA256SUMS) provide the Installer.URL / Installer.Checksum
+# for the NINA manifest PR (isbeorn/nina.plugin.manifests).
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          lfs: false
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Build (Release)
+        run: dotnet build CaeloWorks.NINA.Benchmark/CaeloWorks.NINA.Benchmark.csproj -c Release
+
+      - name: Package + checksum
+        shell: pwsh
+        run: |
+          $dll = "CaeloWorks.NINA.Benchmark/bin/Release/net8.0-windows/CaeloWorks.NINA.Benchmark.dll"
+          if (-not (Test-Path $dll)) { throw "DLL not found at $dll" }
+          New-Item -ItemType Directory -Force -Path dist | Out-Null
+          Copy-Item $dll dist/
+          Compress-Archive -Path $dll -DestinationPath dist/CaeloWorks.NINA.Benchmark.zip -Force
+          $hash = (Get-FileHash $dll -Algorithm SHA256).Hash.ToLower()
+          "$hash  CaeloWorks.NINA.Benchmark.dll" | Out-File -Encoding ascii dist/SHA256SUMS.txt
+          $ver = (Get-Item $dll).VersionInfo.FileVersion
+          @"
+          CaeloWorks.NINA.Benchmark v$ver
+
+          Asset CaeloWorks.NINA.Benchmark.dll is the install file for the NINA plugin manifest
+          (Installer.Type: DLL). SHA256: $hash
+
+          To list it on NINA (isbeorn/nina.plugin.manifests):
+          CreateManifest.ps1 -file CaeloWorks.NINA.Benchmark.dll -installerUrl <this asset's URL>
+          "@ | Out-File -Encoding utf8 release-notes.md
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/CaeloWorks.NINA.Benchmark.dll
+            dist/CaeloWorks.NINA.Benchmark.zip
+            dist/SHA256SUMS.txt
+          body_path: release-notes.md
+          generate_release_notes: true
+          fail_on_unmatched_files: true

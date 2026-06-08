@@ -53,6 +53,23 @@ dotnet build CaeloWorks.NINA.Benchmark/CaeloWorks.NINA.Benchmark.csproj -c Relea
 CI (GitHub Actions, `windows-latest`) compiles the plugin on every push and uploads the built DLL as
 an artifact.
 
+## Releasing
+
+Bump the version in `Properties/AssemblyInfo.cs`, then push a matching tag:
+
+```bash
+git tag v0.6.3.0 && git push origin v0.6.3.0
+```
+
+The `Release plugin` workflow builds in Release and publishes a GitHub Release with the
+`CaeloWorks.NINA.Benchmark.dll` (+ a zip and `SHA256SUMS.txt`). That DLL's download URL and SHA256
+feed the `Installer.URL` / `Installer.Checksum` of the manifest PR to
+[`isbeorn/nina.plugin.manifests`](https://github.com/isbeorn/nina.plugin.manifests):
+
+```powershell
+.\tools\CreateManifest.ps1 -file CaeloWorks.NINA.Benchmark.dll -installerUrl <release-asset-url>
+```
+
 ## License
 
 [MPL-2.0](LICENSE.txt) — same as N.I.N.A.
