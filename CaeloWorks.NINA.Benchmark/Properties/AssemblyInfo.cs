@@ -55,9 +55,9 @@ Each function is timed (one warm-up pass, then the mean of N runs) and aggregate
 [assembly: AssemblyMetadata("Author", "CaeloWorks")]
 [assembly: AssemblyMetadata("License", "MPL-2.0")]
 [assembly: AssemblyMetadata("LicenseURL", "https://www.mozilla.org/en-US/MPL/2.0/")]
-[assembly: AssemblyMetadata("Repository", "https://github.com/CaeloWorks/nina.plugin.benchmark")]
+[assembly: AssemblyMetadata("Repository", "https://github.com/caelo-works/nina.plugin.benchmark")]
 [assembly: AssemblyMetadata("Homepage", "https://nina-benchmark-plugin.com")]
-[assembly: AssemblyMetadata("ChangelogURL", "https://github.com/CaeloWorks/nina.plugin.benchmark/releases")]
+[assembly: AssemblyMetadata("ChangelogURL", "https://github.com/caelo-works/nina.plugin.benchmark/releases")]
 [assembly: AssemblyMetadata("Tags", "benchmark,performance,diagnostics,imaging")]
 
 // Plugin icon shown in the plugin list and detail page (replaces the default puzzle piece).
