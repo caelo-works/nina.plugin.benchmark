@@ -27,6 +27,20 @@ GPU, RAM) and the **benchmark results** (per-function breakdown of the latest ru
 history, plus *Run benchmark* and *Clear all*), both on the plugin page (Plugins tab) and as
 **dockables on the Imaging view**. A single shared `BenchmarkEngine` backs all three views.
 
+## Installation
+
+The plugin isn't in N.I.N.A.'s built-in plugin manager yet, so for now install it manually from a
+release:
+
+1. Close N.I.N.A.
+2. Download `CaeloWorks.NINA.Benchmark.dll` from the
+   [latest release](https://github.com/caelo-works/nina.plugin.benchmark/releases/latest).
+3. Copy it into `%localappdata%\NINA\Plugins\3.0.0\` (create the folder if it doesn't exist).
+4. Start N.I.N.A. The plugin shows up under **Plugins**, and as dockables on the Imaging view.
+
+On first use, open the **Benchmark results** panel and click **Download test set** to fetch the test
+frames (about 190 MB, cached and reused afterwards).
+
 ## Test frames
 
 The test frames are **not** bundled with the plugin. On first use you click **Download test set** in
