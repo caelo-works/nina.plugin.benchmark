@@ -16,15 +16,15 @@ input pixel formats, same constructor arguments, same chain order):
 | `BinaryDilation3x3` | dilation |
 | `Convolution` | Laplacian-of-Gaussian kernel pass |
 | `BlobCounter` | structure / blob detection |
-| `StarDetection` | full detector (HFR + star count) — shown but excluded from the score as a superset |
+| `StarDetection` | full detector (HFR + star count), shown but excluded from the score as a superset |
 
 Each function is timed (one warm-up pass, then the mean of N runs) and aggregated into a per-function
 breakdown plus an overall score (`100000 / sum-of-primitive-ms`, higher is faster), so different
 machines (mini-PCs, NUCs, laptops) can be compared on the real acquisition workload.
 
-The plugin surfaces two blocks — **system information** (CPU, Windows edition, frequency, power plan,
+The plugin surfaces two blocks, **system information** (CPU, Windows edition, frequency, power plan,
 GPU, RAM) and the **benchmark results** (per-function breakdown of the latest run, best score, run
-history, plus *Run benchmark* and *Clear all*) — both on the plugin page (Plugins tab) and as
+history, plus *Run benchmark* and *Clear all*), both on the plugin page (Plugins tab) and as
 **dockables on the Imaging view**. A single shared `BenchmarkEngine` backs all three views.
 
 ## Test frames
@@ -32,44 +32,10 @@ history, plus *Run benchmark* and *Clear all*) — both on the plugin page (Plug
 The test frames are **not** bundled with the plugin. On first use you click **Download test set** in
 the *Benchmark results* panel; the frames (~190 MB) are fetched once from the sharing site's
 `/api/testset` manifest into `%localappdata%\NINA\BenchmarkPlugin\TestImages` and cached. Their
-sha256 is re-verified before every run — if a frame is missing or corrupted the plugin shows a
+sha256 is re-verified before every run; if a frame is missing or corrupted the plugin shows a
 warning and the download button again. Run history is persisted as JSON under
 `%localappdata%\NINA\BenchmarkPlugin\history.json`.
 
-## Building
-
-> The plugin targets `net8.0-windows` (WPF) and therefore builds on **Windows** only.
-
-```powershell
-dotnet build CaeloWorks.NINA.Benchmark/CaeloWorks.NINA.Benchmark.csproj -c Release
-```
-
-Deploy to your local N.I.N.A. plugin folder during development:
-
-```powershell
-dotnet build CaeloWorks.NINA.Benchmark/CaeloWorks.NINA.Benchmark.csproj -c Release -p:NinaDeploy=true
-```
-
-CI (GitHub Actions, `windows-latest`) compiles the plugin on every push and uploads the built DLL as
-an artifact.
-
-## Releasing
-
-Bump the version in `Properties/AssemblyInfo.cs`, then push a matching tag:
-
-```bash
-git tag v0.6.3.0 && git push origin v0.6.3.0
-```
-
-The `Release plugin` workflow builds in Release and publishes a GitHub Release with the
-`CaeloWorks.NINA.Benchmark.dll` (+ a zip and `SHA256SUMS.txt`). That DLL's download URL and SHA256
-feed the `Installer.URL` / `Installer.Checksum` of the manifest PR to
-[`isbeorn/nina.plugin.manifests`](https://github.com/isbeorn/nina.plugin.manifests):
-
-```powershell
-.\tools\CreateManifest.ps1 -file CaeloWorks.NINA.Benchmark.dll -installerUrl <release-asset-url>
-```
-
 ## License
 
-[MPL-2.0](LICENSE.txt) — same as N.I.N.A.
+[MPL-2.0](LICENSE.txt), same as N.I.N.A.
