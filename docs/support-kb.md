@@ -12,6 +12,12 @@ French or German.** So a French user will still quote English labels at you
 document is the exact string the plugin displays. If a user quotes a label you cannot
 find in this document, say so and escalate rather than guess which control they mean.
 
+**Numbers are formatted by the user's Windows locale, not by the plugin.** The same
+score is shown as `84.2` on an English Windows and `84,2` on a French one, and sizes
+likewise (`179.6 MB` or `179,6 MB`). Every figure quoted in this document uses the dot
+form. Match on the digits, not on the separator, and never tell a user their number
+"looks wrong" because of a comma.
+
 **Never invent a figure, a path, a version or a compatibility claim.** This plugin
 exists to publish measured numbers, and support has to hold the same line. If the
 answer is not in this document, the correct answer is *"I don't know, I'm passing this
@@ -171,8 +177,9 @@ to press Run straight away, and it is normal.
 > the sharing site (~190 MB) and cached for every future run.
 
 **While downloading**, the box shows **Downloading test set…**, a progress bar, a line
-like `128,4 MB / 179,6 MB · 51,2 MB left` on the left, the throughput
-(e.g. `12,4 MB/s`) on the right, and a **Cancel** button.
+like `128.4 MB / 179.6 MB · 51.2 MB left` on the left, the throughput
+(e.g. `12.4 MB/s`) on the right, and a **Cancel** button. On a French Windows the same
+line reads `128,4 MB / 179,6 MB`: the separator follows the OS locale.
 
 **What is actually downloaded:** four FITS frames, about **188 MB** in total, from
 `https://nina-benchmark-plugin.com`. They are stored in
@@ -180,6 +187,11 @@ like `128,4 MB / 179,6 MB · 51,2 MB left` on the left, the throughput
 it lands**, and the whole set is **re-verified before every single run** (that is the
 **"Verifying test set…"** status). A corrupted or incomplete set is rejected and the
 user is sent back to the download prompt.
+
+**"It said 190 MB but the bar only counts to 179.6 MB."** Both figures are right and
+nothing is missing. The message announces the size in decimal megabytes (about
+190 MB), while the progress bar counts in binary megabytes (188,326,080 bytes is
+179.6 MB when divided by 1024). The download is complete. Reassure and move on.
 
 **The download is resumable only by restarting it.** Cancelling shows *"Download
 cancelled. Click to try again."* and the partial file is discarded. There is no
@@ -257,15 +269,17 @@ below. **No images are sent, ever.**
 
 **How a run is labelled on the leaderboard, and this is public:**
 
-- the **nickname** is the **Observer name configured in N.I.N.A.** (truncated to 40
-  characters);
+- the **nickname** is the **Observer name configured in N.I.N.A.**, found at
+  **Options → General → Astrometry** (truncated to 40 characters);
 - the **machine** is the **Machine name** field from the Sharing panel, or, if that
   field is empty, **the name of the active N.I.N.A. profile** (truncated to 60
   characters).
 
 A user who does not want their real name on a public leaderboard must change their
-N.I.N.A. Observer name **before** sharing. Point this out if they seem to be sharing
-under a real name by accident.
+N.I.N.A. Observer name **before** sharing. **It is at Options → General → Astrometry,
+in the Observer field.** (N.I.N.A.'s own menus are translated, so a French user sees
+that path in French, unlike the plugin's panels which stay in English.) Point this out
+if they seem to be sharing under a real name by accident.
 
 **Submissions are signed.** The plugin fetches a single-use nonce from the site and
 signs the run, so the server can tell that a submission came from a genuine plugin
@@ -294,7 +308,9 @@ The user will paste the message. These are the exact strings, and where they app
   escalate: this one is not covered by a known cause.
 - **"History cleared"** Confirms **Clear all** wiped the history. It is not
   recoverable.
-- **"Done. Score 84,2 (1 188 ms total)"** Normal end of a successful run.
+- **"Done. Score 84.2 (1188 ms total)"** Normal end of a successful run. The decimal
+  separator follows the user's Windows locale, so a French user reads
+  *"Done. Score 84,2"*.
 
 ### Messages while downloading the test frames
 
@@ -327,6 +343,9 @@ These all appear as **"Submit failed: Server returned <code>. <body>"**.
   happen on an untouched plugin. Escalate.
 - **`429` with `Too many submissions, slow down.`** The site rate-limits submissions
   per IP. Wait a minute and share again.
+- **`400` with `Invalid JSON`** or **`422` with `Invalid payload`** The site could not
+  read what the plugin sent. This should never happen on an untouched plugin, and the
+  usual cause is a hand-edited or corrupted `history.json`. Escalate.
 - **`500` with `Database error`** A site-side failure. Escalate.
 
 Two more, both raised before the run is even sent:
@@ -370,17 +389,21 @@ trimmed.
 ### An old run in the history can no longer be shared
 
 **Symptom:** *"Share fails on my old runs but works on the new one."* The message is
-`422` with `Run was not produced against the current official test set.`, or `401`
-with `Unrecognized or unsupported plugin version.`
+`422` with `Run was not produced against the current official test set.`
 
-**Cause:** a submission is tied to **the version of the test frames it was measured
-on**, and to the plugin build that produced it. When the official test set is updated,
-or when the plugin build is too old, previously-recorded runs in the history become
-unsubmittable. In particular, **runs recorded before plugin 0.6.0.0 carry no test-set
-version at all and can never be submitted.**
+**Cause:** a submission is tied to **the version of the test frames the run was
+measured on**. When the official test set is updated, the runs already sitting in the
+history become unsubmittable. In particular, **runs recorded before plugin 0.6.0.0
+carry no test-set version at all and can never be submitted.**
 
-**The fix always works and takes one click: run the benchmark again on the current
-build, then share the new run.** Nothing is broken, and the score is not affected.
+**The fix takes one click: run the benchmark again, then share the new run.** Nothing
+is broken, and the score is not affected.
+
+**Do not confuse this with `401` `Unrecognized or unsupported plugin version.`** That
+one is not about the age of the run at all: the plugin always sends **the version it
+is currently running**, so a `401` means **the installed plugin build is too old for
+the site**. Re-running the benchmark on an old build will not fix it. **They must
+update the plugin first**, then run the benchmark again.
 
 ### The score only compares runs made on the same test set
 
@@ -394,8 +417,15 @@ version changed, and escalate if in doubt.
 
 Not a bug, but it catches people. A shared run is labelled with the **Observer name
 set in N.I.N.A.** and with the **Machine name** (or the active profile's name if that
-field is empty). Both are **public** on the leaderboard. A user who shared under their
-real name and wants it removed cannot do it from the plugin. **Escalate.**
+field is empty). Both are **public** on the leaderboard.
+
+**To change it before sharing: Options → General → Astrometry, in the Observer field.**
+Then run the benchmark again and share that run. (N.I.N.A.'s menus are translated, so
+a French user sees that path in French; the plugin's own panels stay in English.)
+
+**To remove a name from a run that is already shared: escalate.** It cannot be done
+from the plugin, and there is no self-service way to delete or rename a published run.
+Do not promise it, and do not suggest a workaround.
 
 ---
 
