@@ -3,7 +3,7 @@
 **This is written for a support agent, not for a user.** Quote it, do not paraphrase
 it: the sentences here are checked against the source, a paraphrase is not.
 
-Applies to **0.6.3.0**. To check what the user is running: the version is shown next
+Applies to **0.7.0.0**. To check what the user is running: the version is shown next
 to **Benchmark** in N.I.N.A.'s plugin list.
 
 **The plugin's own interface is in English only, even when N.I.N.A. itself is in
@@ -37,7 +37,7 @@ blur, edge detection, threshold, dilation, blob counter, star detection) over a 
 downloaded test frames, and turns the total into a single comparable **score**. The
 run can then be submitted to a public leaderboard.
 
-- **Version:** 0.6.3.0
+- **Version:** 0.7.0.0
 - **Licence:** MPL-2.0, free and open source
 - **Requires N.I.N.A. 3.2 or newer.** Windows x64 only (the plugin is a
   `net8.0-windows` WPF assembly, like N.I.N.A. itself).
@@ -215,7 +215,7 @@ absolute meaning: it exists to be compared with other runs of the **same test se
 
 **Each function is timed the same way: one warm-up pass that is thrown away, then the
 mean of 3 runs.** The number of runs is **fixed at 3 and is not user-configurable** in
-0.6.3.0. There is no setting for it anywhere in the interface, so do not send users
+0.7.0.0. There is no setting for it anywhere in the interface, so do not send users
 looking for one.
 
 The breakdown lists these functions, under exactly these names:
@@ -255,7 +255,10 @@ from a friend's, this is why, and their score is still valid.
 ## Sharing a run to the leaderboard
 
 **Sharing is anonymous and needs no account.** On a history row, the **Share** button
-submits that run to https://nina-benchmark-plugin.com. When it succeeds:
+opens a **"Share this run"** confirmation dialog (since 0.7.0.0). It shows the **Public
+name** the run will carry (prefilled from the N.I.N.A. Observer name, editable) and the
+**Machine label**, with **Cancel** and **Share** buttons. Pressing **Share** in the
+dialog submits that run to https://nina-benchmark-plugin.com. When it succeeds:
 
 - the status line reads **"Shared. Link copied: <url>"**, and the run's URL is
   **copied to the clipboard automatically**;
@@ -269,17 +272,18 @@ below. **No images are sent, ever.**
 
 **How a run is labelled on the leaderboard, and this is public:**
 
-- the **nickname** is the **Observer name configured in N.I.N.A.**, found at
-  **Options → General → Astrometry** (truncated to 40 characters);
+- the **nickname** is the **Public name** from the share dialog, prefilled from the
+  **Observer name configured in N.I.N.A.** and editable at share time (truncated to 40
+  characters);
 - the **machine** is the **Machine name** field from the Sharing panel, or, if that
   field is empty, **the name of the active N.I.N.A. profile** (truncated to 60
   characters).
 
-A user who does not want their real name on a public leaderboard must change their
-N.I.N.A. Observer name **before** sharing. **It is at Options → General → Astrometry,
-in the Observer field.** (N.I.N.A.'s own menus are translated, so a French user sees
-that path in French, unlike the plugin's panels which stay in English.) Point this out
-if they seem to be sharing under a real name by accident.
+A user who does not want their real name on a public leaderboard just edits the
+**Public name** field in the share dialog **before** pressing Share; nothing is sent
+until they confirm. To change it for good instead, set the Observer name at **Options →
+General → Astrometry**. (N.I.N.A.'s own menus are translated, so a French user sees that
+path in French, unlike the plugin's panels which stay in English.)
 
 **Submissions are signed.** The plugin fetches a single-use nonce from the site and
 signs the run, so the server can tell that a submission came from a genuine plugin
@@ -359,17 +363,18 @@ Two more, both raised before the run is even sent:
 
 ## Known bugs and limits: read before answering
 
-**There is no open bug in 0.6.3.0.** What follows are real limits of the current
+**There is no open bug in 0.7.0.0.** What follows are real limits of the current
 build. They are not user mistakes: confirm them, do not send the user back to their
 settings to hunt for an error they did not make.
 
-### "Clear all" wipes the history instantly, with no confirmation
+### "Clear all" permanently deletes the runs it clears
 
-**Symptom:** *"I clicked Clear all and everything is gone, including the links to my
+**Symptom:** *"I clicked Clear all and my runs are gone, including the links to my
 shared runs."*
 
-**Cause:** **Clear all** deletes every saved run immediately. There is **no
-confirmation dialog and no undo** in 0.6.3.0. It rewrites `history.json` on the spot.
+**Cause:** **Clear all** empties the history. **Since 0.7.0.0 it asks for confirmation
+first** (a **"Clear all runs"** Yes/No dialog), so it can no longer fire by accident,
+but **once confirmed there is no undo** and it rewrites `history.json` on the spot.
 
 **What survives:** the runs that were **already shared** are still online and still on
 the leaderboard. Only the local history and the local copies of their links are lost.
@@ -413,15 +418,21 @@ exactly why the site refuses runs from an outdated set. If a user says their sco
 "changed for no reason" after re-downloading the frames, ask whether the test set
 version changed, and escalate if in doubt.
 
-### Sharing publishes the N.I.N.A. Observer name
+### Sharing publishes a public name, editable at share time
 
-Not a bug, but it catches people. A shared run is labelled with the **Observer name
-set in N.I.N.A.** and with the **Machine name** (or the active profile's name if that
-field is empty). Both are **public** on the leaderboard.
+Not a bug, but it catches people. A shared run is labelled with a **public name** and
+a **Machine name** (or the active profile's name if that field is empty). Both are
+**public** on the leaderboard.
 
-**To change it before sharing: Options → General → Astrometry, in the Observer field.**
-Then run the benchmark again and share that run. (N.I.N.A.'s menus are translated, so
-a French user sees that path in French; the plugin's own panels stay in English.)
+**Since 0.7.0.0, clicking Share opens a "Share this run" dialog first.** It shows the
+**Public name** the run will carry, **prefilled from the N.I.N.A. Observer name**, and
+the user can **check and edit it there before confirming**. Editing it in the dialog
+changes only that submission's label, not their N.I.N.A. profile, so a user worried
+about their real name appearing just edits the field before pressing **Share**.
+
+**To set a lasting default instead: Options → General → Astrometry, in the Observer
+field.** (N.I.N.A.'s menus are translated, so a French user sees that path in French;
+the plugin's own panels stay in English.)
 
 **To remove a name from a run that is already shared: escalate.** It cannot be done
 from the plugin, and there is no self-service way to delete or rename a published run.

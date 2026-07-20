@@ -72,8 +72,14 @@
     Disabled by default and in CI.
   -->
   <Target Name="DeployToNina" AfterTargets="Build" Condition="'$(NinaDeploy)' == 'true' and '$(CI)' != 'true'">
+    <!--
+      Deploy into the same folder N.I.N.A.'s plugin manager uses (named after the AssemblyTitle,
+      "Benchmark"), NOT the assembly name. Using a different folder makes N.I.N.A. load the plugin
+      twice (manager copy + dev copy), which yields two distinct sets of plugin types and crashes
+      the UI with a RelayCommand parameter-type mismatch.
+    -->
     <PropertyGroup>
-      <NinaPluginDir>$(LOCALAPPDATA)\NINA\Plugins\3.0.0\CaeloWorks.NINA.Benchmark</NinaPluginDir>
+      <NinaPluginDir>$(LOCALAPPDATA)\NINA\Plugins\3.0.0\Benchmark</NinaPluginDir>
     </PropertyGroup>
     <ItemGroup>
       <DeployFiles Include="$(TargetDir)**\*" />

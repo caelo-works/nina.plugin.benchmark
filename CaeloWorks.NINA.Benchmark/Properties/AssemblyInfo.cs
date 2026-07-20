@@ -18,8 +18,8 @@ using System.Runtime.InteropServices;
 [assembly: Guid("5ebd0d69-a343-472f-b4b6-487a63249448")]
 
 // [MANDATORY] The plugin version, "Major.Minor.Patch.Build".
-[assembly: AssemblyVersion("0.6.3.0")]
-[assembly: AssemblyFileVersion("0.6.3.0")]
+[assembly: AssemblyVersion("0.7.0.0")]
+[assembly: AssemblyFileVersion("0.7.0.0")]
 
 // [MANDATORY] The minimum N.I.N.A. version this plugin is compatible with. We build against the
 // 3.2 SDK and use 3.2-era injection APIs (IImageDataFactory, IPluggableBehaviorSelector), so 3.2 is

@@ -15,6 +15,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using NINA.Core.Enum;
@@ -22,6 +23,7 @@ using NINA.Core.Interfaces;
 using NINA.Image.ImageAnalysis;
 using NINA.Image.Interfaces;
 using NINA.Profile.Interfaces;
+using MyMessageBox = NINA.Core.MyMessageBox.MyMessageBox;
 
 namespace CaeloWorks.NINA.Benchmark.Core {
 
@@ -56,6 +58,15 @@ namespace CaeloWorks.NINA.Benchmark.Core {
         [ObservableProperty] private string machineName;
         [ObservableProperty] private bool isSubmitting;
         [ObservableProperty] private string lastShareUrl;
+
+        // ---- share confirmation (verify/adjust the public name before publishing) ----
+        [ObservableProperty] private bool isConfirmingShare;
+        [ObservableProperty] private string shareName;
+        private BenchmarkResult pendingShareResult;
+
+        /// <summary>Machine label that will accompany the shared run (read-only preview in the dialog).</summary>
+        public string ShareMachineLabel =>
+            string.IsNullOrWhiteSpace(MachineName) ? ActiveProfileName : MachineName;
 
         // ---- test-set (downloaded frames) state ----
         [ObservableProperty] private TestSetStatus testSetStatus = TestSetStatus.Missing;
@@ -150,15 +161,48 @@ namespace CaeloWorks.NINA.Benchmark.Core {
         partial void OnMachineNameChanged(string value) =>
             settingsStore.Save(new BenchmarkSettings { MachineName = MachineName ?? "" });
 
+        /// <summary>
+        /// Step 1 of sharing: open the confirmation overlay so the user can verify (and adjust)
+        /// the public name before anything leaves the machine. Pre-fills the N.I.N.A. Observer name.
+        /// </summary>
         [RelayCommand]
-        private async Task SubmitAsync(BenchmarkResult result) {
+        private void BeginShare(BenchmarkResult result) {
+            if (result == null || IsSubmitting) { return; }
+            pendingShareResult = result;
+            ShareName = profileService?.ActiveProfile?.AstrometrySettings?.Observer ?? "";
+            OnPropertyChanged(nameof(ShareMachineLabel));
+            IsConfirmingShare = true;
+        }
+
+        /// <summary>Dismiss the confirmation overlay without submitting.</summary>
+        [RelayCommand]
+        private void CancelShare() {
+            IsConfirmingShare = false;
+            pendingShareResult = null;
+        }
+
+        /// <summary>Step 2 of sharing: submit the pending run under the confirmed public name.</summary>
+        [RelayCommand]
+        private async Task ConfirmShareAsync() {
+            var result = pendingShareResult;
+            IsConfirmingShare = false;
+            pendingShareResult = null;
+            if (result != null) {
+                await SubmitAsync(result, ShareName);
+            }
+        }
+
+        private async Task SubmitAsync(BenchmarkResult result, string observerOverride) {
             if (result == null || IsSubmitting) { return; }
             IsSubmitting = true;
             StatusText = "Submitting…";
             try {
-                // Identity comes from N.I.N.A.: the Observer option, and the machine label
-                // (the configured name, or the active profile name as a fallback).
-                var observer = profileService?.ActiveProfile?.AstrometrySettings?.Observer;
+                // Identity comes from N.I.N.A.: the Observer option (as confirmed/edited in the
+                // share dialog), and the machine label (the configured name, or the active profile
+                // name as a fallback).
+                var observer = string.IsNullOrWhiteSpace(observerOverride)
+                    ? profileService?.ActiveProfile?.AstrometrySettings?.Observer
+                    : observerOverride.Trim();
                 var machine = string.IsNullOrWhiteSpace(MachineName)
                     ? profileService?.ActiveProfile?.Name
                     : MachineName;
@@ -310,6 +354,14 @@ namespace CaeloWorks.NINA.Benchmark.Core {
 
         [RelayCommand(CanExecute = nameof(CanClear))]
         private void ClearHistory() {
+            if (History.Count == 0) { return; }
+            var answer = MyMessageBox.Show(
+                "Remove every saved run from this list? Runs you already shared stay online on the " +
+                "leaderboard, but runs that were never shared are lost. This cannot be undone.",
+                "Clear all runs",
+                MessageBoxButton.YesNo,
+                MessageBoxResult.No);
+            if (answer != MessageBoxResult.Yes) { return; }
             History.Clear();
             store.Save(History);
             OnPropertyChanged(nameof(LatestResult));

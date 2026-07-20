@@ -145,11 +145,11 @@
                                             <TextBlock Margin="7,0,0,0" VerticalAlignment="Center" Text="Details" />
                                         </StackPanel>
                                     </Button>
-                                    <!-- Before sharing: submit this run. -->
+                                    <!-- Before sharing: open the confirmation overlay (verify the public name). -->
                                     <Button Margin="3,2" Padding="14,4,14,4" HorizontalContentAlignment="Left"
                                             ToolTip="Submit this run to the sharing site"
                                             Visibility="{Binding IsNotShared, Converter={StaticResource BoolToVis}}"
-                                            Command="{Binding DataContext.SubmitCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                            Command="{Binding DataContext.BeginShareCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                             CommandParameter="{Binding}"
                                             IsEnabled="{Binding DataContext.NotSubmitting, RelativeSource={RelativeSource AncestorType=UserControl}}">
                                         <StackPanel Orientation="Horizontal" Margin="10,3">
@@ -256,6 +256,40 @@
                 </StackPanel>
             </Button>
         </StackPanel>
+
+        <!-- Share confirmation: verify/adjust the public name before the run goes to the leaderboard. -->
+        <Grid Background="#B0000000"
+              Visibility="{Binding IsConfirmingShare, Converter={StaticResource BoolToVis}}">
+            <Border MaxWidth="440" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="24"
+                    Padding="18" BorderThickness="1" BorderBrush="#40808080"
+                    Background="{DynamicResource BackgroundBrush}">
+                <StackPanel>
+                    <TextBlock FontWeight="Bold" FontSize="14" Text="Share this run" />
+                    <TextBlock Margin="0,8,0,0" TextWrapping="Wrap" Opacity="0.85"
+                               Text="This run will be public on the leaderboard. Check the name it will be published under:" />
+                    <TextBlock Margin="0,12,0,3" Opacity="0.7" Text="Public name" />
+                    <TextBox Text="{Binding ShareName, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBlock Margin="0,10,0,0" Opacity="0.6" FontStyle="Italic" TextWrapping="Wrap"
+                               Text="{Binding ShareMachineLabel, StringFormat='Machine label: {0}'}" />
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
+                        <Button HorizontalContentAlignment="Left" Padding="16,6,16,6"
+                                Command="{Binding CancelShareCommand}">
+                            <StackPanel Orientation="Horizontal" Margin="10,3">
+                                <Path Style="{StaticResource IconPath}" Data="{StaticResource CaeloIcon_Cancel}" />
+                                <TextBlock Margin="7,0,0,0" VerticalAlignment="Center" Text="Cancel" />
+                            </StackPanel>
+                        </Button>
+                        <Button Margin="8,0,0,0" HorizontalContentAlignment="Left" Padding="16,6,16,6"
+                                Command="{Binding ConfirmShareCommand}" IsEnabled="{Binding NotSubmitting}">
+                            <StackPanel Orientation="Horizontal" Margin="10,3">
+                                <Path Style="{StaticResource IconPath}" Data="{StaticResource CaeloIcon_Share}" />
+                                <TextBlock Margin="7,0,0,0" VerticalAlignment="Center" Text="Share" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Grid>
 
         </Grid>
     </GroupBox>
